@@ -1,4 +1,4 @@
-# Fueling Calculator
+# CAL-culator
 
 A single-page web tool that recommends how much **carbohydrate** and **sodium** to prep
 for a training session, based on session type, duration, and weather (temperature +

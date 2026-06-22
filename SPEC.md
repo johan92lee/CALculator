@@ -73,15 +73,33 @@ Rule: cells that are **absorption-limited (≥ 45 g/h)** scale ~1.33× toward th
 
 ---
 
-## 4. Sodium model
+## 4. Fluid & sodium model
 
-**Sodium loss (mg) = Sweat rate (L/h) × Duration (h) × Sweat sodium concentration (mg/L)**
+> **Key correction (v2):** total sweat *losses* are NOT what you consume during the run.
+> You only *partially* replace fluid and sodium while running, capped by what you can
+> actually drink. The tool reports **recommended intake** as the headline number, with
+> total losses shown only as context. (v1 wrongly presented total losses as intake.)
 
-- **Sweat rate** anchored to validated range **0.5–2.0 L/h**, modulated by intensity (metabolic heat) and weather (temp ↑, humidity ↑ → less evaporative cooling → more sweat). Heuristic kept inside the 0.5–2.0 envelope; directionally consistent with Gonzalez 2009 prediction equations.
-- **Sweat sodium concentration:** default **~1,000 mg/L** (= 42.9 mmol/L marathoner mean; 1 mmol/L Na = 23 mg/L). Salty-sweater setting **~1,500 mg/L** (≈65 mmol/L). Full population range 10–90 mmol/L (~230–2,070 mg/L).
-- **Body weight** scales sweat rate and flags when projected loss exceeds ~2% body mass.
+**Estimated sweat loss — context only, informational:**
 
-### Sodium format dropdown — conversions
+- `Sweat loss (L) = Sweat rate (L/h) × Duration (h)`
+- `Sodium lost (mg) = Sweat loss (L) × Sweat sodium concentration (mg/L)`
+- **Sweat rate** anchored to the validated **0.5–2.0 L/h** range (Baker 2017; ACSM 2007), scaled by intensity and weather (temp ↑, humidity ↑ → more sweat); kept inside the envelope, directionally consistent with Gonzalez 2009.
+- **Sweat sodium concentration:** ~**1,000 mg/L** default (42.9 mmol/L marathoner mean), salty-sweater **~1,500 mg/L**.
+
+**Recommended fluid intake — actionable:**
+
+- `Intake rate (L/h) = min(sweat rate, 0.8 L/h practical cap)` → `Fluid to carry (L) = intake rate × duration`
+- Guidance is **drink to thirst**. ACSM puts practical intake at ~**400–800 mL/h**; gastric emptying tops out near **~1 L/h** — so you cannot (and should not) drink at a 2 L/h sweat rate. Over-drinking is the primary cause of exercise-associated hyponatremia.
+- Finishing **2–3% of body mass down is normal and acceptable** on long/hot efforts; rehydrate afterwards. The tool flags only large (>5%) projected deficits.
+
+**Recommended sodium intake — the "to prep" number, actionable:**
+
+- `Sodium to add (mg) = Fluid intake (L) × drink concentration (mg/L)`
+- **Drink concentration 600 mg/L** default (research range **500–700 mg/L**), **1,000 mg/L** for salty sweaters. This is *partial* replacement — far below total sweat-sodium losses, consistent with ~500–700 mg/h baseline (more for hot/long/salty).
+- Sodium during exercise matters most for efforts **> ~2 h**, **high sweat rates (>1.2 L/h)**, or **salty sweaters**; for short cool runs it's optional.
+
+### Sodium source dropdown — conversions
 
 | Format | Sodium (mg) → grams |
 |---|---|
@@ -97,7 +115,8 @@ Rule: cells that are **absorption-limited (≥ 45 g/h)** scale ~1.33× toward th
 ## 5. Outputs
 
 1. **Total carbs to prep (g)** + ingredient breakdown per chosen carb format (+ warning if rate exceeds chosen format's ceiling).
-2. **Total sodium (mg)** → grams of table salt **or** sodium citrate per chosen sodium format.
+2. **Sodium to add to drinks (g)** of table salt **or** sodium citrate — recommended *intake* (partial replacement), mixed across your planned fluid.
+3. **Recommended fluid intake** (mL/h + total L, drink-to-thirst), with estimated sweat loss and projected deficit shown as context.
 
 ---
 
@@ -131,7 +150,8 @@ Rule: cells that are **absorption-limited (≥ 45 g/h)** scale ~1.33× toward th
 - Baker LB. (2017) Sweating Rate & Sweat Sodium review, *Sports Medicine* — https://link.springer.com/article/10.1007/s40279-017-0691-5
 - Gonzalez RR et al. (2009) Expanded prediction equations of human sweat loss, *J Appl Physiol* — https://pubmed.ncbi.nlm.nih.gov/19407259/
 - Lara B et al. (2016) Sweat electrolyte variability in marathoners, *J Int Soc Sports Nutr* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4966593/
-- ACSM (2007) Exercise and Fluid Replacement position stand — https://www.researchgate.net/publication/232208129_ACSM_Position_Stand_Exercise_and_Fluid_Replacement
+- ACSM (2007) Exercise and Fluid Replacement position stand (fluid ~400–800 mL/h; sodium 0.5–0.7 g/L; hyponatremia) — https://www.researchgate.net/publication/232208129_ACSM_Position_Stand_Exercise_and_Fluid_Replacement
+- GSSI SSE-122 — Sodium Ingestion, Thirst and Drinking During Endurance Exercise — https://www.gssiweb.org/sports-science-exchange/article/sse-122-sodium-ingestion-thirst-and-drinking-during-endurance-exercise
 - Open-Meteo forecast API — https://open-meteo.com/
 
 ---
