@@ -9,35 +9,29 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <style>
-  :root {
+:root {
     --paper:  #EEF1EE;
     --card:   #FFFFFF;
     --ink:    #16191C;
     --muted:  #69716E;
     --line:   #E0E4DF;
     --line-2: #EBEEEA;
-
     --carb:      #D9831A;
     --carb-deep: #B96A0B;
     --carb-soft: #FBEBD2;
-
     --sodium:      #10889E;
     --sodium-deep: #0B6678;
     --sodium-soft: #D7ECEF;
-
     --warn: #C2410C;
     --good: #2F7D55;
-
     --r: 14px;
     --r-sm: 9px;
     --shadow: 0 1px 2px rgba(20,25,22,.04), 0 8px 28px rgba(20,25,22,.06);
-    --maxw: 660px;
-
+    --maxw: 1160px;
     --display: "Space Grotesk", system-ui, sans-serif;
     --body: "Hanken Grotesk", system-ui, sans-serif;
     --mono: "Space Mono", ui-monospace, monospace;
   }
-
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
@@ -51,9 +45,18 @@
     line-height: 1.45;
     font-size: 16px;
   }
-
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 28px 18px 64px; }
-
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 28px 18px 40px; }
+  /* ---------- Two-column layout ---------- */
+  .layout { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
+  @media (min-width: 880px) {
+    .layout { grid-template-columns: 1fr minmax(360px, 420px); }
+  }
+  .inputs { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .inputs .panel { margin-bottom: 0; }
+  .results { min-width: 0; }
+  @media (min-width: 880px) {
+    .results { position: sticky; top: 20px; }
+  }
   /* ---------- Masthead ---------- */
   .mast { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
   .mark {
@@ -63,19 +66,19 @@
   .mark .dot-c { color: var(--carb); }
   .mark .dot-s { color: var(--sodium); }
   .tag { color: var(--muted); font-size: .92rem; }
-
   /* ---------- Readout (signature) ---------- */
   .readout {
     background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
-    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 22px;
+    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 0;
   }
   .readout-grid { display: grid; grid-template-columns: 1fr; }
-  @media (min-width: 540px) { .readout-grid { grid-template-columns: 1fr 1fr; } }
-
-  .dose { padding: 20px 20px 22px; position: relative; }
-  .dose + .dose { border-top: 1px solid var(--line-2); }
-  @media (min-width: 540px) { .dose + .dose { border-top: 0; border-left: 1px solid var(--line-2); } }
-
+  @media (min-width: 540px) and (max-width: 879px) { .readout-grid { grid-template-columns: 1fr 1fr; } }
+  /* in two-column layout the doses always stack vertically */
+  .dose + .dose { border-top: 1px solid var(--line-2); border-left: 0; }
+  @media (min-width: 540px) and (max-width: 879px) {
+    .dose + .dose { border-top: 0; border-left: 1px solid var(--line-2); }
+  }
+  .dose { padding: 18px 20px 20px; position: relative; }
   .dose-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
   .chip {
     font-family: var(--mono); font-size: .66rem; font-weight: 700; letter-spacing: .12em;
@@ -84,15 +87,12 @@
   .chip.c { background: var(--carb); }
   .chip.s { background: var(--sodium); }
   .dose-sub-label { font-size: .8rem; color: var(--muted); }
-
   .big { font-family: var(--display); font-weight: 700; letter-spacing: -.03em; line-height: .92; }
   .big .num { font-size: clamp(2.9rem, 11vw, 3.9rem); }
   .big .unit { font-size: 1.1rem; font-weight: 500; margin-left: 4px; color: var(--muted); }
   .dose.c .big .num { color: var(--carb-deep); }
   .dose.s .big .num { color: var(--sodium-deep); }
   .restate { font-family: var(--mono); font-size: .82rem; color: var(--muted); margin-top: 8px; }
-
-  /* gauge */
   .gauge { margin-top: 16px; }
   .gauge-track {
     position: relative; height: 9px; border-radius: 999px; background: var(--carb-soft); overflow: visible;
@@ -105,7 +105,6 @@
   .tick { position: absolute; top: -4px; width: 2px; height: 17px; background: rgba(22,25,28,.28); border-radius: 2px; }
   .tick-lab { position: absolute; top: 16px; transform: translateX(-50%); font-family: var(--mono); font-size: .62rem; color: var(--muted); white-space: nowrap; }
   .gauge-caption { margin-top: 22px; font-family: var(--mono); font-size: .72rem; color: var(--muted); }
-
   .recipe {
     margin-top: 16px; padding: 12px 13px; border-radius: var(--r-sm);
     background: var(--carb-soft); font-size: .92rem;
@@ -114,7 +113,6 @@
   .recipe-label { font-family: var(--mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
   .recipe strong { font-weight: 700; }
   .recipe .alt { color: var(--muted); font-size: .84rem; }
-
   .flag {
     margin-top: 12px; font-size: .82rem; display: flex; gap: 7px; align-items: flex-start;
     padding: 9px 11px; border-radius: var(--r-sm); line-height: 1.35;
@@ -122,24 +120,19 @@
   .flag.warn { background: #FBEAE1; color: #8a2c08; }
   .flag.ok   { background: #E6F1EA; color: #225c3f; }
   .flag svg { flex: 0 0 auto; margin-top: 1px; }
-
   .empty { padding: 30px 22px; color: var(--muted); font-size: .95rem; text-align: center; grid-column: 1 / -1; }
-
   /* ---------- Controls ---------- */
-  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px 18px 18px; margin-bottom: 16px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 4px 18px 16px; margin-bottom: 16px; }
   .sect-label {
     font-family: var(--mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--muted); padding: 16px 0 12px; display: flex; align-items: center; gap: 8px;
+    color: var(--muted); padding: 13px 0 11px; display: flex; align-items: center; gap: 8px;
   }
   .sect-label::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
-
   .row { display: grid; grid-template-columns: 1fr; gap: 13px; }
   @media (min-width: 480px) { .row.two { grid-template-columns: 1fr 1fr; } }
-
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field > label { font-size: .85rem; font-weight: 600; color: var(--ink); }
   .field .hint { font-size: .76rem; color: var(--muted); }
-
   input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
     font-family: var(--body); font-size: 1rem; color: var(--ink);
     background: #fff; border: 1px solid var(--line); border-radius: var(--r-sm);
@@ -153,13 +146,29 @@
   input:focus, select:focus { outline: none; border-color: var(--sodium); box-shadow: 0 0 0 3px rgba(16,136,158,.16); }
   input::placeholder { color: #aab0ac; }
   option:disabled { color: #b6bbb7; }
-
   .with-unit { position: relative; }
   .with-unit input { padding-right: 44px; }
   .with-unit .u { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: .8rem; color: var(--muted); pointer-events: none; }
-
   /* inline location row */
   .loc-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+  .loc-input { position: relative; }
+  .suggest {
+    position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 40;
+    margin: 0; padding: 5px; list-style: none;
+    background: #fff; border: 1px solid var(--line); border-radius: var(--r-sm);
+    box-shadow: var(--shadow); max-height: 256px; overflow-y: auto;
+  }
+  .suggest[hidden] { display: none; }
+  .suggest li {
+    padding: 9px 11px; border-radius: 7px; cursor: pointer; line-height: 1.25;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .suggest li.active, .suggest li:hover { background: var(--sodium-soft); }
+  .suggest .place { font-weight: 600; font-size: .94rem; color: var(--ink); }
+  .suggest .region { color: var(--muted); font-size: .8rem; }
+  .suggest .flag { padding: 0; background: none; margin: 0; }
+  .suggest .empty-note { padding: 10px 11px; color: var(--muted); font-size: .86rem; cursor: default; }
+  .suggest .empty-note:hover { background: none; }
   .btn {
     font-family: var(--body); font-weight: 600; font-size: .9rem; cursor: pointer;
     border: 1px solid var(--line); background: #fff; color: var(--ink);
@@ -171,13 +180,10 @@
   .btn.icon { padding: 11px 12px; }
   .btn.primary { background: var(--sodium); border-color: var(--sodium); color: #fff; }
   .btn.primary:hover { background: var(--sodium-deep); }
-
   .fetch-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
   .status { font-size: .8rem; color: var(--muted); min-height: 1.1em; }
   .status.err { color: var(--warn); }
   .status.ok { color: var(--good); }
-
-  /* toggles */
   .toggles { display: grid; grid-template-columns: 1fr; gap: 10px; }
   @media (min-width: 480px) { .toggles { grid-template-columns: 1fr 1fr; } }
   .switch {
@@ -196,14 +202,13 @@
   .switch .lab { display: flex; flex-direction: column; }
   .switch .lab b { font-weight: 600; font-size: .9rem; }
   .switch .lab span { font-size: .76rem; color: var(--muted); }
-
-  /* footer */
+  .switch .remark { display: none; font-family: var(--mono); font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+  .switch.c input:checked ~ .remark { display: inline; color: var(--carb-deep); }
+  .switch.s input:checked ~ .remark { display: inline; color: var(--sodium-deep); }
   .foot { margin-top: 26px; font-size: .8rem; color: var(--muted); line-height: 1.55; }
   .foot a { color: var(--sodium-deep); }
   .foot .disc { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
-
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-
   @media (prefers-reduced-motion: reduce) {
     .gauge-fill { transition: none; }
     * { scroll-behavior: auto; }
@@ -212,19 +217,13 @@
 </head>
 <body>
 <main class="wrap">
-
   <header class="mast">
     <div class="mark"><span class="dot-c">CAL</span>-culator</div>
     <div class="tag">Carbs &amp; sodium to weigh out before you run.</div>
   </header>
-
-  <!-- ===== Readout ===== -->
-  <section class="readout" aria-live="polite">
-    <div class="readout-grid" id="readout">
-      <!-- filled by JS -->
-    </div>
-  </section>
-
+  <!-- ===== Two-column layout ===== -->
+  <div class="layout">
+   <div class="inputs">
   <!-- ===== Session ===== -->
   <section class="panel">
     <div class="sect-label">Session</div>
@@ -242,42 +241,44 @@
       <div class="field">
         <label for="duration">Planned duration</label>
         <div class="with-unit">
-          <input type="number" id="duration" min="0" max="600" step="5" value="90" inputmode="numeric" />
+          <input type="number" id="duration" min="0" max="600" step="5" value="90" inputmode="numeric">
           <span class="u">min</span>
         </div>
       </div>
     </div>
   </section>
-
   <!-- ===== Conditions ===== -->
   <section class="panel">
     <div class="sect-label">Conditions</div>
     <div class="field" style="margin-bottom:13px;">
       <label for="location">Location</label>
       <div class="loc-row">
-        <input type="text" id="location" placeholder="City, e.g. Singapore" autocomplete="off" />
+        <div class="loc-input">
+          <input type="text" id="location" placeholder="City, e.g. Singapore" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="locSuggest">
+          <ul class="suggest" id="locSuggest" role="listbox" hidden></ul>
+        </div>
         <button type="button" class="btn icon" id="geo" title="Use my current location" aria-label="Use my current location">📍</button>
       </div>
     </div>
-    <div class="row two" style="margin-bottom:13px;">
+    <div class="row" style="display:grid; grid-template-columns:1fr 1fr auto; gap:13px; align-items:end; margin-bottom:10px;">
       <div class="field">
         <label for="date">Date</label>
-        <input type="date" id="date" />
+        <input type="date" id="date">
       </div>
       <div class="field">
         <label for="time">Start time</label>
-        <input type="time" id="time" value="07:00" />
+        <input type="time" id="time" value="07:00">
       </div>
-    </div>
-    <div class="fetch-row">
       <button type="button" class="btn primary" id="fetch">Get forecast</button>
+    </div>
+    <div class="fetch-row" style="margin-bottom:4px;">
       <span class="status" id="wxStatus"></span>
     </div>
     <div class="row two" style="margin-top:14px;">
       <div class="field">
         <label for="temp">Temperature</label>
         <div class="with-unit">
-          <input type="number" id="temp" min="-20" max="55" step="1" value="18" inputmode="numeric" />
+          <input type="number" id="temp" min="-20" max="55" step="1" value="18" inputmode="numeric">
           <span class="u">°C</span>
         </div>
         <span class="hint">Auto-filled by forecast — editable.</span>
@@ -285,14 +286,13 @@
       <div class="field">
         <label for="humidity">Humidity</label>
         <div class="with-unit">
-          <input type="number" id="humidity" min="0" max="100" step="1" value="60" inputmode="numeric" />
+          <input type="number" id="humidity" min="0" max="100" step="1" value="60" inputmode="numeric">
           <span class="u">%</span>
         </div>
         <span class="hint">Relative humidity.</span>
       </div>
     </div>
   </section>
-
   <!-- ===== You & fuel ===== -->
   <section class="panel">
     <div class="sect-label">You &amp; your fuel</div>
@@ -300,12 +300,19 @@
       <div class="field">
         <label for="weight">Body weight</label>
         <div class="with-unit">
-          <input type="number" id="weight" min="35" max="160" step="1" value="68" inputmode="numeric" />
+          <input type="number" id="weight" min="35" max="160" step="1" value="68" inputmode="numeric">
           <span class="u">kg</span>
         </div>
       </div>
       <div class="field">
-        <label for="carbFormat">Carb source</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <label for="carbFormat" style="font-size:.85rem; font-weight:600; color:var(--ink); white-space:nowrap;">Carb source</label>
+          <label class="switch c" style="border:0; background:transparent; padding:0;" title="Gut-trained — raises carb ceiling to 120 g/h" aria-label="Gut-trained — raises carb ceiling to 120 g/h">
+            <input type="checkbox" id="gut">
+            <span class="track"></span>
+            <span class="remark">gut trained</span>
+          </label>
+        </div>
         <select id="carbFormat">
           <option value="glucosefructose" selected>1:0.8 glucose : fructose</option>
           <option value="sucrose">Sucrose (table sugar)</option>
@@ -314,26 +321,30 @@
       </div>
     </div>
     <div class="field" style="margin-bottom:16px;">
-      <label for="sodiumFormat">Sodium source</label>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <label for="sodiumFormat" style="font-size:.85rem; font-weight:600; color:var(--ink); white-space:nowrap;">Sodium source</label>
+        <label class="switch s" style="border:0; background:transparent; padding:0;" title="Salty sweater — higher sweat-sodium (1,500 mg/L)" aria-label="Salty sweater — higher sweat-sodium (1,500 mg/L)">
+          <input type="checkbox" id="salty">
+          <span class="track"></span>
+          <span class="remark">salty sweater</span>
+        </label>
+      </div>
       <select id="sodiumFormat">
         <option value="salt" selected>Table salt</option>
         <option value="citrate">Sodium citrate</option>
       </select>
     </div>
-    <div class="toggles">
-      <label class="switch c">
-        <input type="checkbox" id="gut" />
-        <span class="track"></span>
-        <span class="lab"><b>Gut-trained</b><span>Raises carb ceiling to 120 g/h</span></span>
-      </label>
-      <label class="switch s">
-        <input type="checkbox" id="salty" />
-        <span class="track"></span>
-        <span class="lab"><b>Salty sweater</b><span>Higher sweat-sodium (1,500 mg/L)</span></span>
-      </label>
+  </section>
+   </div><!-- /.inputs -->
+   <aside class="results">
+  <!-- ===== Readout ===== -->
+  <section class="readout" aria-live="polite">
+    <div class="readout-grid" id="readout">
+      <!-- filled by JS -->
     </div>
   </section>
-
+   </aside><!-- /.results -->
+  </div><!-- /.layout -->
   <footer class="foot">
     Carb targets follow the 2016 AND/DC/ACSM position stand and Jeukendrup (2014); sodium
     uses sweat-rate and sweat-sodium ranges from Baker (2017). Full formulation and sources:
@@ -342,10 +353,9 @@
     individualized advice. The most accurate upgrade is a personal sweat test. Always trial
     fueling in training before racing.</div>
   </footer>
-
 </main>
-
 <script>
+
 (function () {
   "use strict";
 
@@ -449,18 +459,26 @@
     var fmtCeiling = carbCeiling(cFormat, gut);
     var gutCeiling = gut ? 120 : 90;
 
-    // Sweat LOSS (context) vs recommended INTAKE (actionable). You only partially
-    // replace fluid/sodium during a run — capped by what you can actually drink.
+    // Sweat LOSS (context) vs recommended INTAKE (actionable). Sodium intake scales
+    // with losses (so it responds to heat) but is bounded by fluid intake, a per-hour
+    // ceiling, and a drink palatability cap.
     var sr = sweatRate(sKey, temp, hum, wt);
     var sweatLoss = sr * hours;                  // L lost over the session
-    var sweatNaConc = salty ? 1500 : 1000;       // mg/L sweat sodium (for loss estimate)
+    var sweatNaConc = salty ? 1500 : 1000;       // mg/L sweat sodium
+    var lossRate = sr * sweatNaConc;             // mg/h sodium lost
     var totalNaLost = sweatLoss * sweatNaConc;   // mg lost (informational)
 
-    var PRACTICAL_CAP = 0.8;                     // L/h you can realistically drink while running
+    var PRACTICAL_CAP = 1.0;                     // L/h fluid — up to the gastric-emptying limit in heat
     var intakeRate = Math.min(sr, PRACTICAL_CAP);
     var fluidIntake = intakeRate * hours;        // L to plan/carry
-    var drinkNaConc = salty ? 1000 : 600;        // mg/L target in drinks (research: 500-700)
-    var sodiumIntake = fluidIntake * drinkNaConc; // mg sodium to add to drinks
+
+    // Recommended sodium: ~60% of losses, floored/capped for tolerance, delivered in
+    // the drink up to a 1,500 mg/L palatability cap (drink-only for now).
+    var REPLACE_FRAC = 0.6, NA_FLOOR = 300, NA_CEIL = 1500, DRINK_CAP = 1500;
+    var targetRate = Math.min(NA_CEIL, Math.max(NA_FLOOR, lossRate * REPLACE_FRAC)); // mg/h
+    var drinkRate = Math.min(targetRate, intakeRate * DRINK_CAP);  // mg/h the drink can carry
+    var sodiumIntake = drinkRate * hours;        // mg sodium to add to drinks
+    var actualConc = fluidIntake > 0 ? sodiumIntake / fluidIntake : 0; // mg/L
 
     var deficitL = Math.max(0, sweatLoss - fluidIntake);
     var deficitPct = (deficitL / wt) * 100;      // 1 L sweat ≈ 1 kg
@@ -526,11 +544,15 @@
       var tsp = "";
       if (sFormat === "salt") tsp = ' <span class="alt">(≈ ' + (Math.round((naGrams / 5.69) * 4) / 4) + ' tsp)</span>';
       html += '<div class="big"><span class="num">' + r1(naGrams) + '</span><span class="unit">g ' + sodiumName + '</span></div>';
-      html += '<div class="restate">' + comma(round10(sodiumIntake)) + ' mg sodium · ' + drinkNaConc + ' mg/L in ~' + r1(fluidIntake) + ' L</div>';
+      html += '<div class="restate">' + comma(round10(sodiumIntake)) + ' mg sodium · ~' + round10(actualConc) + ' mg/L in ~' + r1(fluidIntake) + ' L</div>';
 
       html += '<div class="recipe"><span class="recipe-label">Mix into your bottles</span><strong>' + r1(naGrams) + ' g</strong> ' + sodiumName + tsp + ' across ~' + r1(fluidIntake) + ' L</div>';
 
-      html += '<div class="gauge-caption" style="margin-top:14px;">Drink to thirst, ~' + round10(intakeRate * 1000) + ' mL/h · est. sweat loss ' + r1(sweatLoss) + ' L (' + comma(round10(totalNaLost)) + ' mg Na)</div>';
+      html += '<div class="gauge-caption" style="margin-top:14px;">Drink to thirst, ~' + round10(intakeRate * 1000) + ' mL/h · target ~' + comma(round10(targetRate)) + ' mg/h (≈60% of ' + comma(round10(lossRate)) + ' mg/h lost)</div>';
+
+      if (actualConc > 1150) {
+        html += '<div class="gauge-caption" style="margin-top:8px;">~' + round10(actualConc) + ' mg/L is a strong, salty mix — sip steadily; many split part into salt capsules taken with water.</div>';
+      }
 
       if (deficitPct > 5) {
         html += '<div class="flag warn">' + WARN_ICON + '<span>You can’t drink fast enough to offset this — projected ~' + r1(deficitPct) + '% deficit. Drink at the top of your tolerance, pace for the heat, and rehydrate hard afterwards.</span></div>';
@@ -646,6 +668,87 @@
     var iso = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
     els.date.value = iso;
     els.date.min = iso;
+  })();
+
+  // ---- Location autocomplete (Open-Meteo geocoding) ----
+  (function () {
+    var input = els.location;
+    var box = document.getElementById("locSuggest");
+    if (!input || !box) return;
+    var items = [], active = -1, timer = null;
+
+    function flag(cc) {
+      if (!cc || cc.length !== 2) return "";
+      return cc.toUpperCase().replace(/./g, function (c) {
+        return String.fromCodePoint(127397 + c.charCodeAt(0));
+      });
+    }
+    function close() {
+      box.hidden = true; box.innerHTML = ""; items = []; active = -1;
+      input.setAttribute("aria-expanded", "false");
+    }
+    function open() { box.hidden = false; input.setAttribute("aria-expanded", "true"); }
+
+    function pick(i) {
+      var g = items[i]; if (!g) return;
+      coords = { lat: g.latitude, lon: g.longitude, label: g.label };
+      input.value = g.label;
+      close();
+      setStatus("Location set — tap “Get forecast”.", "ok");
+    }
+
+    function draw() {
+      if (!items.length) {
+        box.innerHTML = '<li class="empty-note">No matches — try a different spelling.</li>';
+        open(); return;
+      }
+      box.innerHTML = items.map(function (g, i) {
+        return '<li role="option" data-i="' + i + '"' + (i === active ? ' class="active"' : '') +
+          '><span class="flag">' + flag(g.country_code) + '</span>' +
+          '<span><span class="place">' + g.name + '</span> ' +
+          '<span class="region">' + [g.admin1, g.country].filter(Boolean).join(", ") + '</span></span></li>';
+      }).join("");
+      open();
+    }
+
+    function search(q) {
+      var url = "https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(q) + "&count=5&language=en&format=json";
+      fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+        if (input.value.trim() !== q) return; // stale response
+        items = (j.results || []).map(function (g) {
+          return {
+            latitude: g.latitude, longitude: g.longitude, name: g.name,
+            admin1: g.admin1, country: g.country, country_code: g.country_code,
+            label: [g.name, g.admin1, g.country_code].filter(Boolean).join(", ")
+          };
+        });
+        active = -1; draw();
+      }).catch(function () { close(); });
+    }
+
+    input.addEventListener("input", function () {
+      var q = input.value.trim();
+      clearTimeout(timer);
+      if (q.length < 2) { close(); return; }
+      timer = setTimeout(function () { search(q); }, 250);
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (box.hidden) return;
+      if (e.key === "ArrowDown") { e.preventDefault(); active = Math.min(active + 1, items.length - 1); draw(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); active = Math.max(active - 1, 0); draw(); }
+      else if (e.key === "Enter" && active >= 0) { e.preventDefault(); pick(active); }
+      else if (e.key === "Escape") { close(); }
+    });
+
+    box.addEventListener("mousedown", function (e) {
+      var li = e.target.closest("li[data-i]"); if (!li) return;
+      e.preventDefault(); pick(parseInt(li.getAttribute("data-i"), 10));
+    });
+
+    document.addEventListener("click", function (e) {
+      if (e.target !== input && !box.contains(e.target)) close();
+    });
   })();
 
   render();

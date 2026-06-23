@@ -89,15 +89,20 @@ Rule: cells that are **absorption-limited (≥ 45 g/h)** scale ~1.33× toward th
 
 **Recommended fluid intake — actionable:**
 
-- `Intake rate (L/h) = min(sweat rate, 0.8 L/h practical cap)` → `Fluid to carry (L) = intake rate × duration`
-- Guidance is **drink to thirst**. ACSM puts practical intake at ~**400–800 mL/h**; gastric emptying tops out near **~1 L/h** — so you cannot (and should not) drink at a 2 L/h sweat rate. Over-drinking is the primary cause of exercise-associated hyponatremia.
-- Finishing **2–3% of body mass down is normal and acceptable** on long/hot efforts; rehydrate afterwards. The tool flags only large (>5%) projected deficits.
+- `Intake rate (L/h) = min(sweat rate, 1.0 L/h cap)` → `Fluid to carry (L) = intake rate × duration`
+- Guidance is **drink to thirst**, up to **~1.0 L/h in the heat** — the gastric-emptying limit. Warm conditions (≤35 °C) don't impair emptying unless you're already dehydrated; only extreme heat (~49 °C) or hypohydration cut it ~20–25%. Never exceed your sweat rate — over-drinking causes hyponatremia.
+- Finishing **2–3% of body mass down is normal** on long/hot efforts; rehydrate afterwards. The tool flags only large (>5%) projected deficits.
 
 **Recommended sodium intake — the "to prep" number, actionable:**
 
-- `Sodium to add (mg) = Fluid intake (L) × drink concentration (mg/L)`
-- **Drink concentration 600 mg/L** default (research range **500–700 mg/L**), **1,000 mg/L** for salty sweaters. This is *partial* replacement — far below total sweat-sodium losses, consistent with ~500–700 mg/h baseline (more for hot/long/salty).
-- Sodium during exercise matters most for efforts **> ~2 h**, **high sweat rates (>1.2 L/h)**, or **salty sweaters**; for short cool runs it's optional.
+Scales with losses so it responds to heat, then bounded by tolerance and palatability:
+- `Loss rate (mg/h) = sweat rate × sweat-sodium concentration`
+- `Target (mg/h) = clamp(loss rate × 60%, 300, 1500)` — partial replacement (top up after the run); floored 300, capped 1,500 mg/h for GI tolerance.
+- `Sodium to add (mg) = min(target, intake rate × 1,500 mg/L) × duration` — delivered in the drink up to a **1,500 mg/L** palatability cap.
+- **Salty-sweater** raises sweat-sodium (1,000 → 1,500 mg/L) → higher loss rate → higher target.
+- Sodium matters most for efforts **> ~2 h**, **high sweat rates (>1.2 L/h)**, or **salty sweaters**; for short cool runs it's optional.
+
+> **Why concentration scales (not just fluid):** in heat you can't drink more than ~1 L/h, so to replace more sodium the *drink* gets saltier — up to 1,500 mg/L (Johan's chosen cap). Palatability and voluntary intake drop above ~50 mmol/L (~1,150 mg/L), so the tool flags when the mix is strong. Beyond the drink's capacity, the excess should come from **salt capsules taken with water** — *parked; drink-only for now*. Replacement fraction (60%), the 1,500 mg/h ceiling, and the 1,500 mg/L cap are all tunable.
 
 ### Sodium source dropdown — conversions
 
@@ -152,6 +157,9 @@ Rule: cells that are **absorption-limited (≥ 45 g/h)** scale ~1.33× toward th
 - Lara B et al. (2016) Sweat electrolyte variability in marathoners, *J Int Soc Sports Nutr* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4966593/
 - ACSM (2007) Exercise and Fluid Replacement position stand (fluid ~400–800 mL/h; sodium 0.5–0.7 g/L; hyponatremia) — https://www.researchgate.net/publication/232208129_ACSM_Position_Stand_Exercise_and_Fluid_Replacement
 - GSSI SSE-122 — Sodium Ingestion, Thirst and Drinking During Endurance Exercise — https://www.gssiweb.org/sports-science-exchange/article/sse-122-sodium-ingestion-thirst-and-drinking-during-endurance-exercise
+- Gastric emptying during exercise: effects of heat stress and hypohydration (PubMed 2920721) — https://pubmed.ncbi.nlm.nih.gov/2920721/
+- Compositional aspects of hydration beverages / sodium palatability ≥50 mmol/L (MDPI 2024) — https://pmc.ncbi.nlm.nih.gov/articles/PMC10781183/
+- Beverage sodium concentration, plasma sodium & volume in the heat (RCT) — https://pmc.ncbi.nlm.nih.gov/articles/PMC9813217/
 - Open-Meteo forecast API — https://open-meteo.com/
 
 ---
