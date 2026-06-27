@@ -1,8 +1,8 @@
 # Training Fueling Calculator — Validated Spec
 
-> A tool to calculate how much **carbohydrate** and **sodium** to prep for a training session, driven by session type, duration, and weather. This document is the fact-checked formulation; the tool is **not yet built**.
+> A tool to calculate how much **carbohydrate** and **sodium** to prep for a training session, driven by session type, duration, and weather. This document is the fact-checked formulation and feature spec; the tool is **built** at `index.html`.
 
-_Last updated: 2026-06-21_
+_Last updated: 2026-06-27_
 
 ---
 
@@ -27,6 +27,8 @@ A **single self-contained `index.html`** page (HTML + CSS + JS, no dependencies)
 | Sodium format | dropdown | Table salt / Sodium citrate |
 
 **Weather:** date + location → **Open-Meteo** forecast API (free, no key, hourly temp + relative humidity, ~16-day horizon). Needs date, location, and time of day. If date is beyond the forecast window, fall back to manual entry / seasonal averages.
+
+**Workout entry (optional):** instead of picking session type + duration by hand, paste a planned workout (time- or distance-based) and the tool derives both and auto-fills them — see §6.
 
 ---
 
@@ -125,29 +127,83 @@ Scales with losses so it responds to heat, then bounded by tolerance and palatab
 
 ---
 
-## 6. Future pipeline (parked)
+## 6. Workout-based session entry (optional)
 
-1. **Lab-test carb-oxidation** — if a metabolic test gives measured carb oxidation rate, use it for glycogen-drawdown estimates and pre-session loading (NOT to raise intake, which stays absorption-capped).
-2. **Race-route fueling planner** — upload race route, detect aid/water stations, recommend a fueling strategy that times carb + fluid intake to where you can pick up or carry fuel.
-3. **Personal sweat test calibration** — weigh-in before/after a run to replace population-average sweat rate and sodium concentration with your own numbers (gold standard per Baker 2017).
+Instead of manually choosing session type + duration, paste a planned workout and the tool **derives both** and auto-fills them. Fully client-side — no LLM, no backend.
+
+### Input mode toggle: time-based or distance-based
+
+The toggle only changes **how each segment's duration is derived**; classification and all downstream carb/sodium logic are identical in both modes.
+
+- **Time-based** — segments carry a duration: `15' easy, 5x3' hard w/2' jog, 10' cd`. Duration is read directly; no paces needed.
+- **Distance-based** — segments carry a distance: `14km easy, 3km HMP`. Duration = distance × the pace for that segment's intensity, drawn from the **My paces** panel (or an inline `@m:ss`).
+
+### Paste syntax (grammar)
+
+- Segments separated by `,`, a new line, `+`, or the word `into`.
+- **Time:** `15'`, `15min`, `15m`, `90s`, `1:30` (mm:ss).
+- **Distance:** `14km`, `400m`, `5k`, `1.5km`, `1mi`.
+- **Reps:** `5x1km`, `8x90s`, `6x3'` — optional recovery `w/<time|distance> <label>`.
+- **Inline pace (distance):** `@3:50` (per km).
+- **Intensity words → matrix row · pace zone:**
+  - `easy / recovery / wu / cd / jog / z1 / z2` → Easy · Easy pace
+  - `long / steady` → Long · Easy pace
+  - `mp / marathon` → Long · MP pace
+  - `hmp / half` → Tempo · HMP pace
+  - `tempo / threshold / t / z4` → Tempo · Threshold pace
+  - `intervals / vo2 / reps / hard / 5k / 3k / z5` → Intervals · Interval pace
+  - `race / tt` → Race · HMP pace (default)
+- A rep block with recovery but no label defaults to **Intervals**.
+
+### My paces panel (distance mode only)
+
+Five editable zone paces (min:ss /km); defaults: Easy 5:30 · MP 4:30 · HMP 4:00 · Threshold 3:55 · Interval 3:40. Hidden in time mode. The same paces feed the parked carb-expenditure model later — entered once, reused.
+
+### Parser → segments → effort
+
+1. Parse each segment into `{ durationMin, row, pace?, distance? }`. Distance × pace → duration; recoveries count as Easy and add to total time.
+2. **Total duration** = sum of all segments (warm-up + work + recoveries + cool-down).
+3. **Session row (classification):** sum duration by row; the session row = the **highest-intensity** row whose total time is **≥ max(10 min, 15% of session)**; if none qualifies, the row with the most total time. This filters tiny additions (e.g. strides) while letting a real quality block define the session.
+4. Auto-fill the session-type dropdown + duration → the normal carb + sodium readout updates. The derived row also drives the sweat-rate base, so sodium stays consistent.
+
+### Worked example — `14km easy into 3km HMP` (distance mode, Easy 5:30 / HMP 4:00)
+
+- 14 km easy → 77 min; 3 km HMP → 12 min; **total 89 min**.
+- Quality gate = max(10, 15% × 89) = 13.4 min; the 12-min HMP finish just misses → classified **Long** (aerobic run with a fast finish, not a race session).
+- → carb rate ≈ 46 g/h → **~68 g**; sodium from 89 min + weather.
+
+### Output
+
+Just **auto-fills** session type + duration (no extra output panel). A small parsed-summary line confirms what was read (e.g. `14 km easy (77 min) + 3 km HMP (12 min) = 89 min · Long`) and flags any segment it couldn't time (a distance with no pace).
 
 ---
 
-## 7. Key science notes
+## 7. Future pipeline (parked)
+
+1. **Free-text / screenshot workout parsing** — paste un-structured coach notes or a screenshot; needs an LLM (Claude Haiku via a small serverless proxy, or bring-your-own-key) + hosting, so deferred from the offline-file build. The paste-syntax planner (§6) is the no-backend version.
+2. **Carb-expenditure model** — use segment pace × intensity (the My-paces data already captured) to estimate g/min carb burn and glycogen drawdown, refining where in the band the rate sits. Intake stays absorption-capped.
+3. **Lab-test carb-oxidation** — measured oxidation rate for glycogen-drawdown estimates and pre-session loading.
+4. **Race-route fueling planner** — upload race route, detect aid/water stations, time carb + fluid intake to them.
+5. **Personal sweat-test calibration** — weigh-in before/after a run to replace population-average sweat rate and sodium concentration with your own numbers (gold standard per Baker 2017).
+6. **Salt-capsule overflow** — when the sodium target exceeds the 1,500 mg/L drink cap, route the remainder to salt capsules taken with water.
+
+---
+
+## 8. Key science notes
 
 - **Exogenous vs endogenous oxidation.** Exogenous = carbs ingested during exercise (gels/drinks). Endogenous = your own stored glycogen (muscle + liver). Fueling aims to raise exogenous oxidation to **spare** limited endogenous glycogen and delay depletion ("bonking", ~90–120 min of hard effort). The 120-vs-90 g/h study showed 120 raised exogenous oxidation but did **not** spare endogenous glycogen better than 90 — which is why 90 stays the default and 120 is reserved for the longest efforts.
 - **The gut is the ceiling, not intensity.** Carb oxidation during exercise is capped by intestinal transport (~60 g/h glucose-only; ~90 with glucose+fructose; up to ~120 trained). Higher intensity burns more glycogen but you can't absorb more, so intensity selects position within a band, not above the ceiling.
 
 ---
 
-## 8. What's directly peer-reviewed vs. heuristic
+## 9. What's directly peer-reviewed vs. heuristic
 
 - **Peer-reviewed (hard numbers):** carb duration bands & the 30–60 / 90 / 120 g/h ceilings; sweat rate range 0.5–2.0 L/h; sweat sodium concentration ranges; the salt/citrate chemistry conversions.
 - **Practical heuristic (defensible, not separately RCT-validated):** session-type positioning within each band; the gut-trained ×1.33 scaling; the temp/humidity → sweat-rate scaling (simplified from validated prediction equations).
 
 ---
 
-## 9. Sources
+## 10. Sources
 
 - 2016 Joint Position Stand — Nutrition and Athletic Performance (AND/DC/ACSM; Thomas, Erdman & Burke, *Med Sci Sports Exerc* 48(3):543–568)
 - Jeukendrup A. (2014) Carbohydrate Intake During Exercise, *Sports Medicine* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4008807/
@@ -164,7 +220,8 @@ Scales with losses so it responds to heat, then bounded by tolerance and palatab
 
 ---
 
-## 10. Status
+## 11. Status
 
 - ✅ Formulation fully specified and fact-checked
-- ⬜ Build the `index.html` tool (next step — awaiting go-ahead)
+- ✅ Tool built at `index.html` (carbs, fluid & sodium, Open-Meteo forecast + location autocomplete, two-column design)
+- 🔨 Workout-based session entry (§6) — time/distance toggle + paces panel + paste parser

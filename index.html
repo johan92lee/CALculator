@@ -209,6 +209,27 @@
   .foot a { color: var(--sodium-deep); }
   .foot .disc { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  /* ---------- Workout planner ---------- */
+  .opt { font-family: var(--body); font-size: .62rem; text-transform: none; letter-spacing: 0; color: var(--muted); background: var(--line-2); padding: 2px 7px; border-radius: 999px; margin-left: 7px; }
+  .wk-modes { display: inline-flex; background: var(--line-2); border-radius: var(--r-sm); padding: 3px; gap: 3px; margin-bottom: 11px; }
+  .wk-mode { font-family: var(--body); font-size: .82rem; font-weight: 600; color: var(--muted); border: 0; background: transparent; padding: 7px 13px; border-radius: 7px; cursor: pointer; transition: background .15s, color .15s; }
+  .wk-mode.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(20,25,22,.08); }
+  .wk-mode:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(16,136,158,.25); }
+  .wk-box { font-family: var(--mono); font-size: .9rem; width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 12px; color: var(--ink); background: #fff; line-height: 1.55; transition: border-color .15s, box-shadow .15s; }
+  .wk-box:focus { outline: none; border-color: var(--sodium); box-shadow: 0 0 0 3px rgba(16,136,158,.16); }
+  .paces { margin-top: 12px; }
+  .paces[hidden] { display: none; }
+  .paces-label { font-family: var(--mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .paces-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 7px; }
+  .paces-grid label { display: flex; flex-direction: column; gap: 3px; font-size: .66rem; color: var(--muted); text-align: center; }
+  .paces-grid input { font-family: var(--mono); font-size: .82rem; text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; width: 100%; -webkit-appearance: none; appearance: none; }
+  .paces-grid input:focus { outline: none; border-color: var(--sodium); box-shadow: 0 0 0 2px rgba(16,136,158,.16); }
+  .wk-summary { margin-top: 12px; font-family: var(--mono); font-size: .8rem; color: var(--sodium-deep); line-height: 1.45; }
+  .wk-summary:empty { display: none; }
+  .wk-summary.err { color: var(--warn); }
+  .wk-summary .err { color: var(--warn); }
+  .wk-summary strong { color: var(--ink); }
+  .hint code { font-family: var(--mono); font-size: .92em; background: var(--line-2); padding: 1px 5px; border-radius: 4px; }
   @media (prefers-reduced-motion: reduce) {
     .gauge-fill { transition: none; }
     * { scroll-behavior: auto; }
@@ -224,6 +245,27 @@
   <!-- ===== Two-column layout ===== -->
   <div class="layout">
    <div class="inputs">
+  <!-- ===== Plan from workout (optional) ===== -->
+  <section class="panel">
+    <div class="sect-label">Plan from workout <span class="opt">optional</span></div>
+    <div class="wk-modes" role="tablist" aria-label="Workout input mode">
+      <button type="button" class="wk-mode active" id="wkTime" role="tab">Time-based</button>
+      <button type="button" class="wk-mode" id="wkDist" role="tab">Distance-based</button>
+    </div>
+    <textarea id="workout" class="wk-box" rows="2" autocomplete="off" spellcheck="false" placeholder="e.g. 15' easy, 20' tempo, 10' cd"></textarea>
+    <div class="paces" id="paces" hidden>
+      <span class="paces-label">My paces — min:ss /km</span>
+      <div class="paces-grid">
+        <label>Easy<input id="paceEasy" type="text" inputmode="numeric" value="5:30"></label>
+        <label>MP<input id="paceMp" type="text" inputmode="numeric" value="4:30"></label>
+        <label>HMP<input id="paceHmp" type="text" inputmode="numeric" value="4:00"></label>
+        <label>Thr<input id="paceThr" type="text" inputmode="numeric" value="3:55"></label>
+        <label>Int<input id="paceInt" type="text" inputmode="numeric" value="3:40"></label>
+      </div>
+    </div>
+    <div class="wk-summary" id="wkSummary"></div>
+    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>.</div>
+  </section>
   <!-- ===== Session ===== -->
   <section class="panel">
     <div class="sect-label">Session</div>
@@ -426,7 +468,10 @@
     carbFormat: $("carbFormat"), sodiumFormat: $("sodiumFormat"),
     gut: $("gut"), salty: $("salty"),
     location: $("location"), date: $("date"), time: $("time"),
-    fetch: $("fetch"), geo: $("geo"), wxStatus: $("wxStatus")
+    fetch: $("fetch"), geo: $("geo"), wxStatus: $("wxStatus"),
+    workout: $("workout"), wkSummary: $("wkSummary"), paces: $("paces"),
+    wkTime: $("wkTime"), wkDist: $("wkDist"),
+    paceEasy: $("paceEasy"), paceMp: $("paceMp"), paceHmp: $("paceHmp"), paceThr: $("paceThr"), paceInt: $("paceInt")
   };
 
   // ---- Render --------------------------------------------------------------
@@ -652,6 +697,110 @@
   // typing a new city invalidates stored coords
   els.location.addEventListener("input", function () { coords = null; });
 
+  // ---- Workout paste parser ------------------------------------------------
+  var ROWS = { easy: 1, long: 2, tempo: 3, intervals: 4, race: 5 };
+  var LABELS = {
+    easy: { row: "easy", pace: "easy" }, recovery: { row: "easy", pace: "easy" }, rec: { row: "easy", pace: "easy" },
+    jog: { row: "easy", pace: "easy" }, wu: { row: "easy", pace: "easy" }, warmup: { row: "easy", pace: "easy" },
+    cd: { row: "easy", pace: "easy" }, cooldown: { row: "easy", pace: "easy" }, z1: { row: "easy", pace: "easy" }, z2: { row: "easy", pace: "easy" },
+    long: { row: "long", pace: "easy" }, steady: { row: "long", pace: "easy" }, z3: { row: "long", pace: "mp" },
+    mp: { row: "long", pace: "mp" }, marathon: { row: "long", pace: "mp" },
+    hmp: { row: "tempo", pace: "hmp" }, half: { row: "tempo", pace: "hmp" },
+    tempo: { row: "tempo", pace: "threshold" }, threshold: { row: "tempo", pace: "threshold" }, t: { row: "tempo", pace: "threshold" }, z4: { row: "tempo", pace: "threshold" },
+    intervals: { row: "intervals", pace: "interval" }, interval: { row: "intervals", pace: "interval" },
+    vo2: { row: "intervals", pace: "interval" }, reps: { row: "intervals", pace: "interval" }, rep: { row: "intervals", pace: "interval" },
+    hard: { row: "intervals", pace: "interval" }, strides: { row: "intervals", pace: "interval" }, stride: { row: "intervals", pace: "interval" },
+    "5k": { row: "intervals", pace: "interval" }, "3k": { row: "intervals", pace: "interval" }, z5: { row: "intervals", pace: "interval" },
+    race: { row: "race", pace: "hmp" }, tt: { row: "race", pace: "hmp" }
+  };
+  var ROW_LABEL = { easy: "Easy", long: "Long", tempo: "Tempo", intervals: "Intervals", race: "Race" };
+
+  function wkFindLabel(s) {
+    var w = (s.toLowerCase().match(/[a-z0-9]+/g) || []);
+    for (var i = 0; i < w.length; i++) if (LABELS[w[i]]) return { word: w[i], row: LABELS[w[i]].row, pace: LABELS[w[i]].pace };
+    return null;
+  }
+  function wkPace(t) { var m = t.match(/(\d+):(\d{2})/); return m ? (+m[1]) + (+m[2]) / 60 : null; }
+  function wkDist(s) {
+    var m;
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*km\b/)) return +m[1];
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*mi(?:le)?s?\b/)) return +m[1] * 1.609;
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*m\b/)) return +m[1] / 1000;
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*k\b/)) return +m[1];
+    return null;
+  }
+  function wkMeasure(s, lab, inlinePace, paces) {
+    var m;
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*'/)) return +m[1];
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*(?:min|mins|minutes)\b/)) return +m[1];
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*(?:s|sec|secs|seconds)\b/)) return +m[1] / 60;
+    if (m = s.match(/(\d+(?:\.\d+)?)\s*h\b/)) return +m[1] * 60;
+    if (m = s.match(/\b(\d+):(\d{2})\b/)) return (+m[1]) + (+m[2]) / 60;
+    var d = wkDist(s);
+    if (d != null) {
+      var p = inlinePace;
+      if (p == null && lab && paces && paces[lab.pace] != null) p = paces[lab.pace];
+      if (p == null) return null;
+      return d * p;
+    }
+    return null;
+  }
+  function parseWorkout(text, paces) {
+    var raw = (text || "").toLowerCase().replace(/\binto\b|\bthen\b|\+/g, ",").replace(/[\n;]/g, ",");
+    var parts = raw.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+    var segs = [], errors = [];
+    parts.forEach(function (p) {
+      var reps = 1, body = p, rm = p.match(/^(\d+)\s*[x×]\s*(.*)$/);
+      if (rm) { reps = +rm[1]; body = rm[2]; }
+      var rec = null, work = body, wm = body.match(/\s+(?:w\/|rec(?:overy)?|with)\s*(.*)$/);
+      if (wm) { work = body.slice(0, wm.index).trim(); rec = wm[1].trim(); }
+      var inlinePace = null, pm = work.match(/@\s*(\d+:\d{2})/);
+      if (pm) { inlinePace = wkPace(pm[1]); work = work.replace(/@\s*\d+:\d{2}(?:\/km|\/mi)?/, "").trim(); }
+      var lab = wkFindLabel(work) || (reps > 1 ? { word: "reps", row: "intervals", pace: "interval" } : null);
+      var unit = wkMeasure(work, lab, inlinePace, paces);
+      if (unit == null) { errors.push(p); return; }
+      var workMin = unit * reps, recMin = 0;
+      if (rec) { var rd = wkMeasure(rec, { row: "easy", pace: "easy" }, null, paces); if (rd != null) recMin = rd * Math.max(0, reps - 1); }
+      segs.push({ label: lab ? lab.word : "easy", row: lab ? lab.row : "easy", workMin: workMin, recMin: recMin });
+    });
+    var dur = { easy: 0, long: 0, tempo: 0, intervals: 0, race: 0 }, total = 0;
+    segs.forEach(function (s) { dur[s.row] += s.workMin; dur.easy += s.recMin; total += s.workMin + s.recMin; });
+    var gate = Math.max(10, 0.15 * total), row = null, rank = 0, order = ["easy", "long", "tempo", "intervals", "race"];
+    order.forEach(function (r) { if (dur[r] >= gate && ROWS[r] > rank) { rank = ROWS[r]; row = r; } });
+    if (!row) { var md = -1; order.forEach(function (r) { if (dur[r] > md) { md = dur[r]; row = r; } }); }
+    if (row === "easy" && total >= 75) row = "long"; // a sustained easy run is a long run
+    return { segs: segs, total: total, row: row, errors: errors };
+  }
+
+  function wkReadPaces() {
+    function p(id) { var v = els[id].value || ""; var m = v.match(/(\d+):(\d{2})/); return m ? (+m[1]) + (+m[2]) / 60 : (parseFloat(v) || null); }
+    return { easy: p("paceEasy"), mp: p("paceMp"), hmp: p("paceHmp"), threshold: p("paceThr"), interval: p("paceInt") };
+  }
+  function applyWorkout() {
+    var text = els.workout.value.trim(), summ = els.wkSummary;
+    if (!text) { summ.textContent = ""; summ.className = "wk-summary"; return; }
+    var r = parseWorkout(text, wkReadPaces());
+    if (!r.segs.length) {
+      summ.className = "wk-summary err";
+      summ.textContent = r.errors.length ? "Couldn’t time: " + r.errors.join(" · ") + " — add a pace, or check the syntax." : "Couldn’t read that workout.";
+      return;
+    }
+    els.session.value = r.row;
+    els.duration.value = Math.round(r.total);
+    var parts = r.segs.map(function (s) { return s.label + " " + Math.round(s.workMin + s.recMin) + "′"; }).join(" + ");
+    summ.className = "wk-summary";
+    summ.innerHTML = parts + " = <strong>" + Math.round(r.total) + " min</strong> · " + ROW_LABEL[r.row] +
+      (r.errors.length ? ' <span class="err">(skipped: ' + r.errors.join(", ") + ")</span>" : "");
+    render();
+  }
+  function setWkMode(m) {
+    els.wkTime.classList.toggle("active", m === "time");
+    els.wkDist.classList.toggle("active", m === "distance");
+    els.paces.hidden = (m !== "distance");
+    els.workout.placeholder = m === "distance" ? "e.g. 14km easy into 3km HMP" : "e.g. 15' easy, 20' tempo, 10' cd";
+    applyWorkout();
+  }
+
   // ---- Wire up -------------------------------------------------------------
   ["session", "duration", "temp", "humidity", "weight", "carbFormat", "sodiumFormat"].forEach(function (id) {
     els[id].addEventListener("input", render);
@@ -661,6 +810,12 @@
   els.salty.addEventListener("change", render);
   els.fetch.addEventListener("click", runFetch);
   els.geo.addEventListener("click", useGeo);
+  ["workout", "paceEasy", "paceMp", "paceHmp", "paceThr", "paceInt"].forEach(function (id) {
+    els[id].addEventListener("input", applyWorkout);
+  });
+  els.wkTime.addEventListener("click", function () { setWkMode("time"); });
+  els.wkDist.addEventListener("click", function () { setWkMode("distance"); });
+  setWkMode("time");
 
   // default date = today
   (function () {
