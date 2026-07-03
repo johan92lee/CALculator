@@ -45,51 +45,49 @@
     line-height: 1.45;
     font-size: 16px;
   }
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 28px 18px 40px; }
-  /* ---------- Two-column layout ---------- */
-  .layout { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
-  @media (min-width: 880px) {
-    .layout { grid-template-columns: 1fr minmax(360px, 420px); }
-  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 22px 20px 56px; }
+  /* ---------- Editorial layout: dose hero on top, controls below ---------- */
+  .layout { display: flex; flex-direction: column; }
+  .results { order: -1; min-width: 0; margin: 8px 0 32px; }
   .inputs { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .inputs .panel { margin-bottom: 0; }
-  .results { min-width: 0; }
-  @media (min-width: 880px) {
-    .results { position: sticky; top: 20px; }
-  }
-  /* ---------- Masthead ---------- */
-  .mast { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  /* ---------- Editorial masthead ---------- */
+  .mast { margin: 6px 0 24px; }
+  .eyebrow { display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding-bottom: 11px; border-bottom: 1px solid var(--line); }
+  .eyebrow .ax { color: var(--carb); }
+  .marquee { overflow: hidden; border-bottom: 1px solid var(--line); }
+  .marquee > span { display: inline-block; white-space: nowrap; font-family: var(--mono); font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 9px 0; animation: slide 28s linear infinite; }
+  .marquee b { color: var(--carb); font-weight: 400; }
+  @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .mark {
-    font-family: var(--display); font-weight: 700; font-size: 1.45rem;
-    letter-spacing: -.02em; line-height: 1; display: inline-flex; align-items: baseline; gap: 2px;
+    font-family: var(--display); font-weight: 800; font-size: clamp(3.2rem, 13vw, 7rem);
+    letter-spacing: -.045em; line-height: .88; margin: 22px 0 14px; display: block;
   }
   .mark .dot-c { color: var(--carb); }
   .mark .dot-s { color: var(--sodium); }
-  .tag { color: var(--muted); font-size: .92rem; }
-  /* ---------- Readout (signature) ---------- */
+  .tag { font-family: var(--mono); font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+  .tag b { color: var(--carb); font-weight: 500; }
+  /* ---------- Signature: poster-scale dose readout ---------- */
   .readout {
-    background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
-    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 0;
+    background: transparent; border: 0; border-top: 2px solid var(--carb);
+    border-bottom: 1px solid var(--line); border-radius: 0; overflow: hidden;
   }
   .readout-grid { display: grid; grid-template-columns: 1fr; }
-  @media (min-width: 540px) and (max-width: 879px) { .readout-grid { grid-template-columns: 1fr 1fr; } }
-  /* in two-column layout the doses always stack vertically */
-  .dose + .dose { border-top: 1px solid var(--line-2); border-left: 0; }
-  @media (min-width: 540px) and (max-width: 879px) {
-    .dose + .dose { border-top: 0; border-left: 1px solid var(--line-2); }
-  }
-  .dose { padding: 18px 20px 20px; position: relative; }
-  .dose-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  @media (min-width: 620px) { .readout-grid { grid-template-columns: 1fr 1fr; } }
+  .dose + .dose { border-top: 1px solid var(--line); }
+  @media (min-width: 620px) { .dose + .dose { border-top: 0; border-left: 1px solid var(--line); } }
+  .dose { padding: 22px 20px 24px; position: relative; }
+  .dose-head { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
   .chip {
-    font-family: var(--mono); font-size: .66rem; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; padding: 4px 8px; border-radius: 999px; color: #0A0A0A;
+    font-family: var(--mono); font-size: .62rem; font-weight: 500; letter-spacing: .18em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 2px; color: #0A0A0A;
   }
   .chip.c { background: var(--carb); }
   .chip.s { background: var(--sodium); }
-  .dose-sub-label { font-size: .8rem; color: var(--muted); }
-  .big { font-family: var(--display); font-weight: 700; letter-spacing: -.03em; line-height: .92; }
-  .big .num { font-size: clamp(2.9rem, 11vw, 3.9rem); }
-  .big .unit { font-size: 1.1rem; font-weight: 500; margin-left: 4px; color: var(--muted); }
+  .dose-sub-label { font-family: var(--mono); font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .big { font-family: var(--mono); font-weight: 500; letter-spacing: -.02em; line-height: .8; }
+  .big .num { font-size: clamp(4rem, 17vw, 9rem); }
+  .big .unit { font-family: var(--mono); font-size: 1.05rem; font-weight: 400; margin-left: 6px; color: var(--muted); letter-spacing: 0; }
   .dose.c .big .num { color: var(--carb-deep); }
   .dose.s .big .num { color: var(--sodium-deep); }
   .restate { font-family: var(--mono); font-size: .82rem; color: var(--muted); margin-top: 8px; }
@@ -232,6 +230,7 @@
   .hint code { font-family: var(--mono); font-size: .92em; background: var(--line-2); padding: 1px 5px; border-radius: 4px; }
   @media (prefers-reduced-motion: reduce) {
     .gauge-fill { transition: none; }
+    .marquee > span { animation: none; }
     * { scroll-behavior: auto; }
   }
 </style>
@@ -239,8 +238,10 @@
 <body>
 <main class="wrap">
   <header class="mast">
+    <div class="eyebrow"><span>Pre-session fueling protocol</span><span class="ax">ambidex — fuel, no filler</span></div>
+    <div class="marquee" aria-hidden="true"><span>Fuel, no filler <b>—</b> evidence-dosed <b>—</b> carbs <b>+</b> sodium <b>—</b> weigh it, don't guess it <b>—</b> fuel, no filler <b>—</b> evidence-dosed <b>—</b> carbs <b>+</b> sodium <b>—</b> weigh it, don't guess it <b>—</b>&nbsp;</span></div>
     <div class="mark"><span class="dot-c">CAL</span>-culator</div>
-    <div class="tag">Carbs &amp; sodium to weigh out before you run.</div>
+    <div class="tag">Carbs &amp; sodium to prep — <b>weigh it, don't guess it.</b></div>
   </header>
   <!-- ===== Two-column layout ===== -->
   <div class="layout">
