@@ -26,7 +26,7 @@ A **single self-contained `index.html`** page (HTML + CSS + JS, no dependencies)
 | Carb format | dropdown | Glucose / 1:0.8 glucose:fructose / Sucrose |
 | Sodium format | dropdown | Table salt / Sodium citrate |
 
-**Weather:** date + location → **Open-Meteo** forecast API (free, no key, hourly temp + relative humidity, ~16-day horizon). Needs date, location, and time of day. If date is beyond the forecast window, fall back to manual entry / seasonal averages.
+**Weather:** date + location → **Open-Meteo** forecast API (free, no key, hourly temp + relative humidity, ~16-day horizon). The forecast **auto-fetches when a location is selected** (pick a suggestion, type + blur, or 📍 current location) and re-fetches when the date or start time changes — no button. If date is beyond the forecast window, fall back to manual entry / seasonal averages.
 
 **Workout entry (optional):** instead of picking session type + duration by hand, paste a planned workout (time- or distance-based) and the tool derives both and auto-fills them — see §6.
 
