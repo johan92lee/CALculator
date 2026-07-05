@@ -138,6 +138,7 @@
     background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
   }
   input:focus, select:focus { outline: none; border-color: var(--carb); box-shadow: 0 0 0 3px rgba(200,255,0,.16); }
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: grayscale(1) opacity(.6); cursor: pointer; }
   input::placeholder { color: #6E685E; }
   option:disabled { color: #b6bbb7; }
   .with-unit { position: relative; }
@@ -180,28 +181,20 @@
   .status.ok { color: var(--good); }
   .toggles { display: grid; grid-template-columns: 1fr; gap: 10px; }
   @media (min-width: 480px) { .toggles { grid-template-columns: 1fr 1fr; } }
-  .switch {
-    display: flex; align-items: center; gap: 11px; cursor: pointer;
-    border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; background: var(--field);
-    transition: border-color .15s, background .15s;
-  }
-  .switch:hover { background: var(--hover); }
-  .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
   .track { flex: 0 0 auto; width: 38px; height: 22px; border-radius: 999px; background: #34322E; position: relative; transition: background .18s; }
   .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); box-shadow: none; transition: transform .18s; }
-  .switch input:checked + .track { background: var(--carb); }
-  .switch.s input:checked + .track { background: var(--sodium); }
-  .switch input:checked + .track::after { transform: translateX(16px); }
-  .switch input:focus-visible + .track { box-shadow: 0 0 0 3px rgba(200,255,0,.25); }
-  .switch .lab { display: flex; flex-direction: column; }
-  .switch .lab b { font-weight: 600; font-size: .9rem; }
-  .switch .lab span { font-size: .76rem; color: var(--muted); }
-  .switch .remark { display: none; font-family: var(--mono); font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-  .switch.c input:checked ~ .remark { display: inline; color: var(--carb-deep); }
-  .switch.s input:checked ~ .remark { display: inline; color: var(--sodium-deep); }
+  /* Dose-card header toggles: gut-trained (carbs) & salty sweater (sodium) */
+  .dose-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 9px; cursor: pointer; }
+  .dose-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .dose-toggle .dt-lab { display: none; font-family: var(--mono); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+  .dose-toggle.c.on .dt-lab { display: inline; color: var(--carb-deep); }
+  .dose-toggle.s.on .dt-lab { display: inline; color: var(--sodium-deep); }
+  .dose-toggle.c input:checked + .track { background: var(--carb); }
+  .dose-toggle.s input:checked + .track { background: var(--sodium); }
+  .dose-toggle input:checked + .track::after { transform: translateX(16px); }
+  .dose-toggle input:focus-visible + .track { box-shadow: 0 0 0 3px rgba(200,255,0,.25); }
   .foot { margin-top: 26px; font-size: .8rem; color: var(--muted); line-height: 1.55; }
   .foot a { color: var(--sodium-deep); }
-  .foot .disc { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
   /* ---------- Workout planner ---------- */
   .opt { font-family: var(--body); font-size: .62rem; text-transform: none; letter-spacing: 0; color: var(--muted); background: var(--line-2); padding: 2px 7px; border-radius: 999px; margin-left: 7px; }
@@ -347,14 +340,7 @@
         </div>
       </div>
       <div class="field">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <label for="carbFormat" style="font-size:.85rem; font-weight:600; color:var(--ink); white-space:nowrap;">Carb source</label>
-          <label class="switch c" style="border:0; background:transparent; padding:0;" title="Gut-trained — raises carb ceiling to 120 g/h" aria-label="Gut-trained — raises carb ceiling to 120 g/h">
-            <input type="checkbox" id="gut">
-            <span class="track"></span>
-            <span class="remark">gut trained</span>
-          </label>
-        </div>
+        <label for="carbFormat">Carb source</label>
         <select id="carbFormat">
           <option value="glucosefructose" selected>1:0.8 glucose : fructose</option>
           <option value="sucrose">Sucrose (table sugar)</option>
@@ -363,14 +349,7 @@
       </div>
     </div>
     <div class="field" style="margin-bottom:16px;">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <label for="sodiumFormat" style="font-size:.85rem; font-weight:600; color:var(--ink); white-space:nowrap;">Sodium source</label>
-        <label class="switch s" style="border:0; background:transparent; padding:0;" title="Salty sweater — higher sweat-sodium (1,500 mg/L)" aria-label="Salty sweater — higher sweat-sodium (1,500 mg/L)">
-          <input type="checkbox" id="salty">
-          <span class="track"></span>
-          <span class="remark">salty sweater</span>
-        </label>
-      </div>
+      <label for="sodiumFormat">Sodium source</label>
       <select id="sodiumFormat">
         <option value="salt" selected>Table salt</option>
         <option value="citrate">Sodium citrate</option>
@@ -391,9 +370,6 @@
     Carb targets follow the 2016 AND/DC/ACSM position stand and Jeukendrup (2014); sodium
     uses sweat-rate and sweat-sodium ranges from Baker (2017). Full formulation and sources:
     <a href="SPEC.md">SPEC.md</a>.
-    <div class="disc">These are population-average estimates for planning, not medical or
-    individualized advice. The most accurate upgrade is a personal sweat test. Always trial
-    fueling in training before racing.</div>
   </footer>
 </main>
 <script>
@@ -466,13 +442,16 @@
     session: $("session"), duration: $("duration"),
     temp: $("temp"), humidity: $("humidity"), weight: $("weight"),
     carbFormat: $("carbFormat"), sodiumFormat: $("sodiumFormat"),
-    gut: $("gut"), salty: $("salty"),
     location: $("location"), datetime: $("datetime"),
     geo: $("geo"), wxStatus: $("wxStatus"),
     workout: $("workout"), wkSummary: $("wkSummary"), paces: $("paces"),
     wkTime: $("wkTime"), wkDist: $("wkDist"),
     paceEasy: $("paceEasy"), paceMp: $("paceMp"), paceHmp: $("paceHmp"), paceThr: $("paceThr"), paceInt: $("paceInt")
   };
+
+  // Output-modifier state — the toggles live inside the (re-rendered) dose
+  // cards, so their state is held here and read back on each render.
+  var gutOn = false, saltyOn = false;
 
   // ---- Render --------------------------------------------------------------
   function render() {
@@ -481,8 +460,8 @@
     var temp = parseFloat(els.temp.value);
     var hum = parseFloat(els.humidity.value);
     var wt = Math.max(1, parseFloat(els.weight.value) || 70);
-    var gut = els.gut.checked;
-    var salty = els.salty.checked;
+    var gut = gutOn;
+    var salty = saltyOn;
     if (isNaN(temp)) temp = 18;
     if (isNaN(hum)) hum = 60;
 
@@ -536,7 +515,11 @@
 
     // ----- CARB dose -----
     html += '<div class="dose c">';
-    html += '<div class="dose-head"><span class="chip c">Carbs</span><span class="dose-sub-label">to prep</span></div>';
+    html += '<div class="dose-head"><span class="chip c">Carbs</span><span class="dose-sub-label">to prep</span>'
+          + '<label class="dose-toggle c' + (gut ? ' on' : '') + '" title="Gut-trained — raises the carb ceiling to 120 g/h">'
+          + '<span class="dt-lab">Gut trained</span>'
+          + '<input type="checkbox" data-toggle="gut"' + (gut ? ' checked' : '') + ' aria-label="Gut-trained">'
+          + '<span class="track"></span></label></div>';
 
     if (rate <= 0 || dur <= 0) {
       html += '<div class="big"><span class="num">0</span><span class="unit">g</span></div>';
@@ -580,7 +563,11 @@
 
     // ----- SODIUM dose -----
     html += '<div class="dose s">';
-    html += '<div class="dose-head"><span class="chip s">Sodium</span><span class="dose-sub-label">to add to drinks</span></div>';
+    html += '<div class="dose-head"><span class="chip s">Sodium</span><span class="dose-sub-label">to add to drinks</span>'
+          + '<label class="dose-toggle s' + (salty ? ' on' : '') + '" title="Salty sweater — assume higher sweat-sodium (1,500 mg/L)">'
+          + '<span class="dt-lab">Salty sweater</span>'
+          + '<input type="checkbox" data-toggle="salty"' + (salty ? ' checked' : '') + ' aria-label="Salty sweater">'
+          + '<span class="track"></span></label></div>';
 
     if (dur <= 0) {
       html += '<div class="big"><span class="num">0</span><span class="unit">g</span></div>';
@@ -804,8 +791,13 @@
     els[id].addEventListener("input", render);
     els[id].addEventListener("change", render);
   });
-  els.gut.addEventListener("change", render);
-  els.salty.addEventListener("change", render);
+  // Dose-card toggles are re-created on every render, so delegate from the
+  // persistent readout container and keep their state in gutOn / saltyOn.
+  els.readout.addEventListener("change", function (e) {
+    var key = e.target && e.target.getAttribute && e.target.getAttribute("data-toggle");
+    if (key === "gut") { gutOn = e.target.checked; render(); }
+    else if (key === "salty") { saltyOn = e.target.checked; render(); }
+  });
   els.geo.addEventListener("click", useGeo);
   els.location.addEventListener("change", function () { if (els.location.value.trim() && !coords) runFetch(); });
   els.datetime.addEventListener("change", function () { if (coords) runFetch(); });
