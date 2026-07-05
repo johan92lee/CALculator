@@ -47,16 +47,18 @@
     font-size: 15px;
     overflow: hidden;
   }
-  .wrap { max-width: 1260px; height: 100vh; margin: 0 auto; padding: 12px 22px 16px; display: flex; flex-direction: column; }
-  /* ---------- Fixed two-pane dashboard: inputs left, outputs right ---------- */
+  .wrap { max-width: 1600px; height: 100vh; margin: 0 auto; padding: 12px 18px 16px; display: flex; flex-direction: column; }
+  /* ---------- Fixed three-pane dashboard: personal | session | outputs ---------- */
   .layout { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); gap: 20px; }
+  .input-cols { min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 20px; }
   .inputs { min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 10px; padding-right: 6px; }
   .inputs .panel { margin-bottom: 0; }
   .results { min-width: 0; min-height: 0; display: flex; }
-  @media (max-width: 720px) {
+  @media (max-width: 1000px) {
     body { height: auto; overflow: auto; }
     .wrap { height: auto; }
     .layout { grid-template-columns: 1fr; }
+    .input-cols { grid-template-columns: 1fr; }
     .inputs { overflow: visible; }
   }
   /* ---------- Header: large wordmark ---------- */
@@ -204,12 +206,11 @@
   .wk-mode:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(200,255,0,.25); }
   .wk-box { font-family: var(--mono); font-size: .9rem; width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 12px; color: var(--ink); background: var(--field); line-height: 1.55; transition: border-color .15s, box-shadow .15s; }
   .wk-box:focus { outline: none; border-color: var(--carb); box-shadow: 0 0 0 3px rgba(200,255,0,.16); }
-  .paces { margin-top: 12px; }
-  .paces[hidden] { display: none; }
-  .paces-label { font-family: var(--mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .paces-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 7px; }
-  .paces-grid label { display: flex; flex-direction: column; gap: 3px; font-size: .66rem; color: var(--muted); text-align: center; }
-  .paces-grid input { font-family: var(--mono); font-size: .82rem; text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; width: 100%; -webkit-appearance: none; appearance: none; }
+  .paces-grid { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; }
+  .paces-grid label { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--muted); }
+  .paces-grid .pace-name { flex: 0 0 112px; white-space: nowrap; }
+  .paces-grid input { font-family: var(--mono); font-size: .82rem; text-align: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; flex: 1 1 auto; min-width: 0; -webkit-appearance: none; appearance: none; }
+  .paces-grid .pace-unit { flex: 0 0 auto; font-family: var(--mono); font-size: .7rem; color: var(--muted); white-space: nowrap; }
   .paces-grid input:focus { outline: none; border-color: var(--carb); box-shadow: 0 0 0 2px rgba(200,255,0,.16); }
   .wk-summary { margin-top: 12px; font-family: var(--mono); font-size: .8rem; color: var(--sodium-deep); line-height: 1.45; }
   .wk-summary:empty { display: none; }
@@ -243,9 +244,51 @@
     </div>
     <div class="tag"><b>Fuel, no filler.</b> Weigh it, don't guess it.</div>
   </header>
-  <!-- ===== Two-column layout ===== -->
+  <!-- ===== Three-column layout ===== -->
   <div class="layout">
-   <div class="inputs">
+   <div class="input-cols">
+    <!-- ========== LEFT: personal details ========== -->
+    <div class="inputs">
+  <!-- ===== You & your fuel ===== -->
+  <section class="panel">
+    <div class="sect-label">You &amp; your fuel</div>
+    <div class="field" style="margin-bottom:14px;">
+      <label for="weight">Body weight</label>
+      <div class="with-unit">
+        <input type="number" id="weight" min="35" max="160" step="1" value="80" inputmode="numeric">
+        <span class="u">kg</span>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label for="carbFormat">Carb source</label>
+      <select id="carbFormat">
+        <option value="glucosefructose" selected>1:0.8 glucose : fructose</option>
+        <option value="sucrose">Sucrose (table sugar)</option>
+        <option value="glucose">Glucose only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sodiumFormat">Sodium source</label>
+      <select id="sodiumFormat">
+        <option value="salt" selected>Table salt</option>
+        <option value="citrate">Sodium citrate</option>
+      </select>
+    </div>
+  </section>
+  <!-- ===== Personal paces ===== -->
+  <section class="panel">
+    <div class="sect-label">Your paces</div>
+    <div class="paces-grid">
+      <label><span class="pace-name">Easy</span><input id="paceEasy" type="text" inputmode="numeric" value="6:00"><span class="pace-unit">min/km</span></label>
+      <label><span class="pace-name">Marathon</span><input id="paceMp" type="text" inputmode="numeric" value="5:30"><span class="pace-unit">min/km</span></label>
+      <label><span class="pace-name">Half marathon</span><input id="paceHmp" type="text" inputmode="numeric" value="4:50"><span class="pace-unit">min/km</span></label>
+      <label><span class="pace-name">Threshold</span><input id="paceThr" type="text" inputmode="numeric" value="4:45"><span class="pace-unit">min/km</span></label>
+      <label><span class="pace-name">Interval</span><input id="paceInt" type="text" inputmode="numeric" value="3:50"><span class="pace-unit">min/km</span></label>
+    </div>
+  </section>
+    </div><!-- /left .inputs -->
+    <!-- ========== MIDDLE: this session ========== -->
+    <div class="inputs">
   <!-- ===== Plan from workout (optional) ===== -->
   <section class="panel">
     <div class="sect-label">Plan from workout <span class="opt">optional</span></div>
@@ -254,18 +297,8 @@
       <button type="button" class="wk-mode" id="wkDist" role="tab">Distance-based</button>
     </div>
     <textarea id="workout" class="wk-box" rows="2" autocomplete="off" spellcheck="false" placeholder="e.g. 15' easy, 20' tempo, 10' cd"></textarea>
-    <div class="paces" id="paces" hidden>
-      <span class="paces-label">My paces — min:ss /km</span>
-      <div class="paces-grid">
-        <label>Easy<input id="paceEasy" type="text" inputmode="numeric" value="5:30"></label>
-        <label>MP<input id="paceMp" type="text" inputmode="numeric" value="4:30"></label>
-        <label>HMP<input id="paceHmp" type="text" inputmode="numeric" value="4:00"></label>
-        <label>Thr<input id="paceThr" type="text" inputmode="numeric" value="3:55"></label>
-        <label>Int<input id="paceInt" type="text" inputmode="numeric" value="3:40"></label>
-      </div>
-    </div>
     <div class="wk-summary" id="wkSummary"></div>
-    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>.</div>
+    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>. Distance mode uses your paces.</div>
   </section>
   <!-- ===== Session ===== -->
   <section class="panel">
@@ -328,35 +361,8 @@
       <span class="status" id="wxStatus"></span>
     </div>
   </section>
-  <!-- ===== You & fuel ===== -->
-  <section class="panel">
-    <div class="sect-label">You &amp; your fuel</div>
-    <div class="row two" style="margin-bottom:14px;">
-      <div class="field">
-        <label for="weight">Body weight</label>
-        <div class="with-unit">
-          <input type="number" id="weight" min="35" max="160" step="1" value="68" inputmode="numeric">
-          <span class="u">kg</span>
-        </div>
-      </div>
-      <div class="field">
-        <label for="carbFormat">Carb source</label>
-        <select id="carbFormat">
-          <option value="glucosefructose" selected>1:0.8 glucose : fructose</option>
-          <option value="sucrose">Sucrose (table sugar)</option>
-          <option value="glucose">Glucose only</option>
-        </select>
-      </div>
-    </div>
-    <div class="field" style="margin-bottom:16px;">
-      <label for="sodiumFormat">Sodium source</label>
-      <select id="sodiumFormat">
-        <option value="salt" selected>Table salt</option>
-        <option value="citrate">Sodium citrate</option>
-      </select>
-    </div>
-  </section>
-   </div><!-- /.inputs -->
+    </div><!-- /middle .inputs -->
+   </div><!-- /.input-cols -->
    <aside class="results">
   <!-- ===== Readout ===== -->
   <section class="readout" aria-live="polite">
@@ -444,7 +450,7 @@
     carbFormat: $("carbFormat"), sodiumFormat: $("sodiumFormat"),
     location: $("location"), datetime: $("datetime"),
     geo: $("geo"), wxStatus: $("wxStatus"),
-    workout: $("workout"), wkSummary: $("wkSummary"), paces: $("paces"),
+    workout: $("workout"), wkSummary: $("wkSummary"),
     wkTime: $("wkTime"), wkDist: $("wkDist"),
     paceEasy: $("paceEasy"), paceMp: $("paceMp"), paceHmp: $("paceHmp"), paceThr: $("paceThr"), paceInt: $("paceInt")
   };
@@ -781,7 +787,6 @@
   function setWkMode(m) {
     els.wkTime.classList.toggle("active", m === "time");
     els.wkDist.classList.toggle("active", m === "distance");
-    els.paces.hidden = (m !== "distance");
     els.workout.placeholder = m === "distance" ? "e.g. 14km easy into 3km HMP" : "e.g. 15' easy, 20' tempo, 10' cd";
     applyWorkout();
   }
