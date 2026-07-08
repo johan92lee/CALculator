@@ -39,6 +39,8 @@ A **single self-contained `index.html`** page (HTML + CSS + JS, no dependencies)
 **Duration bands (non-overlapping):** `< 45` · `45–75` · `75–150` · `> 150` min.
 The tool **interpolates by exact duration within each band** to avoid hard jumps.
 
+**Sub-65-min cutoff (non-race).** For any session that is **not** a race and lasts **≤ 65 min**, the tool recommends **zero in-session carbohydrate and zero sodium**. Endogenous glycogen (~400–500 g muscle + liver, ~1,600–2,000 kcal) comfortably fuels sub-maximal efforts up to ~75–90 min, so exogenous carbohydrate adds little for shorter training bouts; likewise sub-hour electrolyte losses are modest and easily replaced at the next meal. **Races are exempt:** for hard ~45–75 min efforts a carbohydrate mouth-rinse / small intake can improve performance via a *central-nervous-system* mechanism (oral CHO receptors), independent of any metabolic fuel need — see §8.
+
 ### Standard matrix — ceiling 90 g/h
 
 | Session type | < 45 m | 45–75 m | 75–150 m | > 150 m |
@@ -193,6 +195,7 @@ Just **auto-fills** session type + duration (no extra output panel). A small par
 
 - **Exogenous vs endogenous oxidation.** Exogenous = carbs ingested during exercise (gels/drinks). Endogenous = your own stored glycogen (muscle + liver). Fueling aims to raise exogenous oxidation to **spare** limited endogenous glycogen and delay depletion ("bonking", ~90–120 min of hard effort). The 120-vs-90 g/h study showed 120 raised exogenous oxidation but did **not** spare endogenous glycogen better than 90 — which is why 90 stays the default and 120 is reserved for the longest efforts.
 - **The gut is the ceiling, not intensity.** Carb oxidation during exercise is capped by intestinal transport (~60 g/h glucose-only; ~90 with glucose+fructose; up to ~120 trained). Higher intensity burns more glycogen but you can't absorb more, so intensity selects position within a band, not above the ceiling.
+- **Why the ≤ 65-min non-race cutoff.** The 2016 AND/DC/ACSM stand and Jeukendrup (2014) both put in-session carbohydrate need at **~0 g/h for exercise up to ~45–75 min**; benefit rises with duration and is robust mainly **> 90 min** (Cermak & van Loon 2013 meta-analysis). For hard efforts of ~45–75 min the *only* documented benefit is from a **carbohydrate mouth rinse** acting on brain reward/motor centres (Carter 2004; Chambers, Bridge & Jones 2009), not from oxidising the carbohydrate — hence the tool keeps recommendations for **races** but zeroes them for shorter training. For sodium, the ACSM (2007) fluid/electrolyte stand ties meaningful in-session sodium need to **prolonged (> ~1–2 h) and/or high-sweat** exercise; over a sub-hour session, sweat-sodium loss is small and best replaced in the next meal.
 
 ---
 
@@ -208,6 +211,9 @@ Just **auto-fills** session type + duration (no extra output panel). A small par
 - 2016 Joint Position Stand — Nutrition and Athletic Performance (AND/DC/ACSM; Thomas, Erdman & Burke, *Med Sci Sports Exerc* 48(3):543–568)
 - Jeukendrup A. (2014) Carbohydrate Intake During Exercise, *Sports Medicine* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4008807/
 - 120 vs 90 g/h carbohydrate oxidation study — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9560939/
+- Cermak NM & van Loon LJC (2013) The use of carbohydrates during exercise as an ergogenic aid, *Sports Medicine* — https://pubmed.ncbi.nlm.nih.gov/23846824/
+- Chambers ES, Bridge MW & Jones DA (2009) Carbohydrate sensing in the human mouth: effects on exercise performance, *J Physiol* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2717300/
+- Carter JM, Jeukendrup AE & Jones DA (2004) The effect of carbohydrate mouth rinse on 1-h cycle time trial performance, *Med Sci Sports Exerc* — https://pubmed.ncbi.nlm.nih.gov/15570147/
 - Baker LB. (2017) Sweating Rate & Sweat Sodium review, *Sports Medicine* — https://link.springer.com/article/10.1007/s40279-017-0691-5
 - Gonzalez RR et al. (2009) Expanded prediction equations of human sweat loss, *J Appl Physiol* — https://pubmed.ncbi.nlm.nih.gov/19407259/
 - Lara B et al. (2016) Sweat electrolyte variability in marathoners, *J Int Soc Sports Nutr* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4966593/

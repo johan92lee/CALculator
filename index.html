@@ -356,7 +356,7 @@
         </div>
       </div>
     </div>
-    <span class="hint" style="display:block; margin-top:8px;">Temp &amp; humidity auto-fill from the forecast once you set a location — both editable.</span>
+    <span class="hint" style="display:block; margin-top:8px; font-size:.7rem; color:var(--muted);">Temp &amp; humidity auto-fill from the forecast — editable.</span>
     <div class="fetch-row" style="margin-top:6px;">
       <span class="status" id="wxStatus"></span>
     </div>
@@ -471,7 +471,13 @@
     if (isNaN(temp)) temp = 18;
     if (isNaN(hum)) hum = 60;
 
+    // Sub-65-min non-race sessions: muscle glycogen and electrolyte reserves
+    // cover the effort, so recommend no in-session carbs or sodium (see SPEC.md).
+    var isRace = (sKey === "race");
+    var noFuelShort = !isRace && dur > 0 && dur <= 65;
+
     var rate = carbRate(sKey, dur, gut);
+    if (noFuelShort) rate = 0;
     var hours = dur / 60;
     var totalCarb = rate * hours;
 
@@ -529,7 +535,11 @@
 
     if (rate <= 0 || dur <= 0) {
       html += '<div class="big"><span class="num">0</span><span class="unit">g</span></div>';
-      html += '<div class="restate">Under ~45 min — no carbs needed during the session.</div>';
+      html += '<div class="restate">' + (dur <= 0
+        ? 'Set a duration to plan carbs.'
+        : noFuelShort
+          ? 'Under ~65 min &amp; not a race — muscle glycogen covers it; no carbs needed.'
+          : 'Under ~45 min — no carbs needed during the session.') + '</div>';
     } else {
       html += '<div class="big"><span class="num">' + r0(totalCarb) + '</span><span class="unit">g</span></div>';
       html += '<div class="restate">' + r0(rate) + ' g/h × ' + (Math.round(hours * 10) / 10) + ' h</div>';
@@ -578,6 +588,9 @@
     if (dur <= 0) {
       html += '<div class="big"><span class="num">0</span><span class="unit">g</span></div>';
       html += '<div class="restate">Set a duration to plan fluids &amp; sodium.</div>';
+    } else if (noFuelShort) {
+      html += '<div class="big"><span class="num">0</span><span class="unit">g</span></div>';
+      html += '<div class="restate">Under ~65 min &amp; not a race — sodium loss is small; drink to thirst and replace it at your next meal.</div>';
     } else {
       var tsp = "";
       if (sFormat === "salt") tsp = ' <span class="alt">(≈ ' + (Math.round((naGrams / 5.69) * 4) / 4) + ' tsp)</span>';
@@ -665,7 +678,7 @@
       return getForecast(loc.lat, loc.lon, date, hhmm).then(function (wx) {
         els.temp.value = Math.round(wx.temp);
         els.humidity.value = Math.round(wx.hum);
-        setStatus("Forecast: " + Math.round(wx.temp) + " °C, " + Math.round(wx.hum) + "% RH" + (loc.label ? " · " + loc.label : ""), "ok");
+        setStatus("");
         render();
       });
     }).catch(function (e) {
