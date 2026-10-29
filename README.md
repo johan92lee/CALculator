@@ -8,11 +8,11 @@ humidity, auto-fetched by date and location).
 
 - ✅ Formulation fact-checked and locked — see [SPEC.md](SPEC.md)
 - ✅ Tool built (`index.html`) — carbs, fluid & sodium, Open-Meteo forecast + location autocomplete
-- 🔨 Workout-based session entry (paste a planned workout → auto-derive session type + duration)
+- ✅ Workout-based session entry (paste a planned workout → auto-derive session type + duration)
 
 ## How it works (short version)
 
-- **Carbs** are driven by session type × duration, capped at the gut's absorption
+- **Carbs** are driven by session type × duration (zero for non-race sessions ≤ 65 min, tapered in to 75 min), capped at the gut's absorption
   ceiling (90 g/h standard, 120 g/h with the gut-trained toggle).
 - **Sodium** = sweat rate × duration × sweat-sodium concentration, with sweat rate
   scaled by intensity and weather.

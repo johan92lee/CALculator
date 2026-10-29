@@ -2,7 +2,7 @@
 
 > A tool to calculate how much **carbohydrate** and **sodium** to prep for a training session, driven by session type, duration, and weather. This document is the fact-checked formulation and feature spec; the tool is **built** at `index.html`.
 
-_Last updated: 2026-06-27_
+_Last updated: 2026-10-29_
 
 ---
 
@@ -20,7 +20,7 @@ A **single self-contained `index.html`** page (HTML + CSS + JS, no dependencies)
 | Location | lat/lon or geolocation | required for forecast |
 | Temperature | °C | auto-filled from forecast, editable |
 | Humidity | % | auto-filled from forecast, editable |
-| Body weight | kg | scales sweat rate; flags >2% body-mass loss |
+| Body weight | kg | scales sweat rate; notes projected deficit >2%, warns >5% body-mass loss |
 | Gut-trained toggle | on/off | raises carb ceiling 90 → 120 g/h |
 | Salty-sweater toggle | on/off | raises sweat sodium concentration |
 | Carb format | dropdown | Glucose / 1:0.8 glucose:fructose / Sucrose |
@@ -39,7 +39,7 @@ A **single self-contained `index.html`** page (HTML + CSS + JS, no dependencies)
 **Duration bands (non-overlapping):** `< 45` · `45–75` · `75–150` · `> 150` min.
 The tool **interpolates by exact duration within each band** to avoid hard jumps.
 
-**Sub-65-min cutoff (non-race).** For any session that is **not** a race and lasts **≤ 65 min**, the tool recommends **zero in-session carbohydrate and zero sodium**. Endogenous glycogen (~400–500 g muscle + liver, ~1,600–2,000 kcal) comfortably fuels sub-maximal efforts up to ~75–90 min, so exogenous carbohydrate adds little for shorter training bouts; likewise sub-hour electrolyte losses are modest and easily replaced at the next meal. **Races are exempt:** for hard ~45–75 min efforts a carbohydrate mouth-rinse / small intake can improve performance via a *central-nervous-system* mechanism (oral CHO receptors), independent of any metabolic fuel need — see §8.
+**Sub-65-min cutoff + 65–75-min taper (non-race).** For any session that is **not** a race and lasts **≤ 65 min**, the tool recommends **zero in-session carbohydrate and zero sodium**. Between **65 and 75 min** both are **tapered in linearly** (0% at 65 → 100% of the model value at 75 min), so there is no hard jump at the cutoff (previously a 65-min tempo gave 0 g and a 66-min tempo ~47 g). This also matches the guideline band, which puts in-session need at ~0 for efforts up to ~45–75 min. Endogenous glycogen (~400–500 g muscle + liver, ~1,600–2,000 kcal) comfortably fuels sub-maximal efforts up to ~75–90 min, so exogenous carbohydrate adds little for shorter training bouts; likewise sub-hour electrolyte losses are modest and easily replaced at the next meal. **Races are exempt:** for hard ~45–75 min efforts a carbohydrate mouth-rinse / small intake can improve performance via a *central-nervous-system* mechanism (oral CHO receptors), independent of any metabolic fuel need — see §8.
 
 ### Standard matrix — ceiling 90 g/h
 
@@ -104,7 +104,8 @@ Scales with losses so it responds to heat, then bounded by tolerance and palatab
 - `Target (mg/h) = clamp(loss rate × 60%, 300, 1500)` — partial replacement (top up after the run); floored 300, capped 1,500 mg/h for GI tolerance.
 - `Sodium to add (mg) = min(target, intake rate × 1,500 mg/L) × duration` — delivered in the drink up to a **1,500 mg/L** palatability cap.
 - **Salty-sweater** raises sweat-sodium (1,000 → 1,500 mg/L) → higher loss rate → higher target.
-- Sodium matters most for efforts **> ~2 h**, **high sweat rates (>1.2 L/h)**, or **salty sweaters**; for short cool runs it's optional.
+- Sodium matters most for efforts **> ~2 h**, **high sweat rates (>1.2 L/h)**, or **salty sweaters**; for short cool runs it's optional — the tool shows an "optional" note when the session is **< 2 h, sweat rate < 1.2 L/h and not salty-sweater**.
+- The 65–75-min non-race taper (§3) applies to the sodium target too.
 
 > **Why concentration scales (not just fluid):** in heat you can't drink more than ~1 L/h, so to replace more sodium the *drink* gets saltier — up to 1,500 mg/L (Johan's chosen cap). Palatability and voluntary intake drop above ~50 mmol/L (~1,150 mg/L), so the tool flags when the mix is strong. Beyond the drink's capacity, the excess should come from **salt capsules taken with water** — *parked; drink-only for now*. Replacement fraction (60%), the 1,500 mg/h ceiling, and the 1,500 mg/L cap are all tunable.
 
@@ -135,7 +136,7 @@ Instead of manually choosing session type + duration, paste a planned workout an
 
 ### Input mode toggle: time-based or distance-based
 
-The toggle only changes **how each segment's duration is derived**; classification and all downstream carb/sodium logic are identical in both modes.
+The toggle sets the reading of the ambiguous `m` unit (see grammar) and the input placeholder; classification and all downstream carb/sodium logic are identical in both modes. Either mode accepts any mix of time and distance segments — a distance segment is always timed from the paces panel.
 
 - **Time-based** — segments carry a duration: `15' easy, 5x3' hard w/2' jog, 10' cd`. Duration is read directly; no paces needed.
 - **Distance-based** — segments carry a distance: `14km easy, 3km HMP`. Duration = distance × the pace for that segment's intensity, drawn from the **My paces** panel (or an inline `@m:ss`).
@@ -143,7 +144,7 @@ The toggle only changes **how each segment's duration is derived**; classificati
 ### Paste syntax (grammar)
 
 - Segments separated by `,`, a new line, `+`, or the word `into`.
-- **Time:** `15'`, `15min`, `15m`, `90s`, `1:30` (mm:ss).
+- **Time:** `15'`, `15min`, `15m`, `90s`, `1:30` (mm:ss). **`m` is ambiguous** (minutes vs metres): in **time mode** `m` is **always minutes** (`15m` = 15 min); in **distance mode** `m` is **always metres** (`400m`). One rule per mode, no number thresholds. To give a distance inside a time-based workout, use `km` (e.g. `6x0.4km`). `'` and `min` are always minutes.
 - **Distance:** `14km`, `400m`, `5k`, `1.5km`, `1mi`.
 - **Reps:** `5x1km`, `8x90s`, `6x3'` — optional recovery `w/<time|distance> <label>`.
 - **Inline pace (distance):** `@3:50` (per km).
@@ -159,20 +160,20 @@ The toggle only changes **how each segment's duration is derived**; classificati
 
 ### My paces panel (distance mode only)
 
-Five editable zone paces (min:ss /km); defaults: Easy 5:30 · MP 4:30 · HMP 4:00 · Threshold 3:55 · Interval 3:40. Hidden in time mode. The same paces feed the parked carb-expenditure model later — entered once, reused.
+Five editable zone paces (min:ss /km); defaults: Easy 6:00 · MP 5:30 · HMP 4:50 · Threshold 4:45 · Interval 3:50. Always visible (left column), **dimmed in time mode** since only distance segments use them. The same paces feed the parked carb-expenditure model later — entered once, reused.
 
 ### Parser → segments → effort
 
 1. Parse each segment into `{ durationMin, row, pace?, distance? }`. Distance × pace → duration; recoveries count as Easy and add to total time.
 2. **Total duration** = sum of all segments (warm-up + work + recoveries + cool-down).
-3. **Session row (classification):** sum duration by row; the session row = the **highest-intensity** row whose total time is **≥ max(10 min, 15% of session)**; if none qualifies, the row with the most total time. This filters tiny additions (e.g. strides) while letting a real quality block define the session.
+3. **Session row (classification):** sum duration by row; the session row = the **highest-intensity** row whose total time is **≥ max(10 min, 15% of session)**; if none qualifies, the row with the most total time. This filters tiny additions (e.g. strides) while letting a real quality block define the session. **An Easy-classified session ≥ 75 min is promoted to Long** (a sustained easy run is a long run).
 4. Auto-fill the session-type dropdown + duration → the normal carb + sodium readout updates. The derived row also drives the sweat-rate base, so sodium stays consistent.
 
-### Worked example — `14km easy into 3km HMP` (distance mode, Easy 5:30 / HMP 4:00)
+### Worked example — `14km easy into 3km HMP` (distance mode, default paces Easy 6:00 / HMP 4:50)
 
-- 14 km easy → 77 min; 3 km HMP → 12 min; **total 89 min**.
-- Quality gate = max(10, 15% × 89) = 13.4 min; the 12-min HMP finish just misses → classified **Long** (aerobic run with a fast finish, not a race session).
-- → carb rate ≈ 46 g/h → **~68 g**; sodium from 89 min + weather.
+- 14 km easy → 84 min; 3 km HMP → 14.5 min; **total 98.5 min**.
+- Quality gate = max(10, 15% × 98.5) = 14.8 min; the 14.5-min HMP finish just misses → classified **Long** (aerobic run with a fast finish, not a race session).
+- → carb rate ≈ 49 g/h → **~81 g**; sodium from 98.5 min + weather.
 
 ### Output
 
@@ -195,7 +196,7 @@ Just **auto-fills** session type + duration (no extra output panel). A small par
 
 - **Exogenous vs endogenous oxidation.** Exogenous = carbs ingested during exercise (gels/drinks). Endogenous = your own stored glycogen (muscle + liver). Fueling aims to raise exogenous oxidation to **spare** limited endogenous glycogen and delay depletion ("bonking", ~90–120 min of hard effort). The 120-vs-90 g/h study showed 120 raised exogenous oxidation but did **not** spare endogenous glycogen better than 90 — which is why 90 stays the default and 120 is reserved for the longest efforts.
 - **The gut is the ceiling, not intensity.** Carb oxidation during exercise is capped by intestinal transport (~60 g/h glucose-only; ~90 with glucose+fructose; up to ~120 trained). Higher intensity burns more glycogen but you can't absorb more, so intensity selects position within a band, not above the ceiling.
-- **Why the ≤ 65-min non-race cutoff.** The 2016 AND/DC/ACSM stand and Jeukendrup (2014) both put in-session carbohydrate need at **~0 g/h for exercise up to ~45–75 min**; benefit rises with duration and is robust mainly **> 90 min** (Cermak & van Loon 2013 meta-analysis). For hard efforts of ~45–75 min the *only* documented benefit is from a **carbohydrate mouth rinse** acting on brain reward/motor centres (Carter 2004; Chambers, Bridge & Jones 2009), not from oxidising the carbohydrate — hence the tool keeps recommendations for **races** but zeroes them for shorter training. For sodium, the ACSM (2007) fluid/electrolyte stand ties meaningful in-session sodium need to **prolonged (> ~1–2 h) and/or high-sweat** exercise; over a sub-hour session, sweat-sodium loss is small and best replaced in the next meal.
+- **Why the ≤ 65-min non-race cutoff.** The 2016 AND/DC/ACSM stand and Jeukendrup (2014) both put in-session carbohydrate need at **~0 g/h for exercise up to ~45–75 min**; benefit rises with duration and is robust mainly **> 90 min** (Cermak & van Loon 2013 meta-analysis). For hard efforts of ~45–75 min the *only* documented benefit is from a **carbohydrate mouth rinse** acting on brain reward/motor centres (Carter 2004; Chambers, Bridge & Jones 2009), not from oxidising the carbohydrate — hence the tool keeps recommendations for **races** but zeroes them for shorter training. The mouth-rinse effect is **not robust**: it is largest when fasted (Fares & Kayser 2011), and a well-controlled trial found no 1-h time-trial benefit in either the fasted or fed state (Trommelen et al. 2015). That's why the exemption is **not** extended to tempo/interval training sessions — after a normal pre-session meal the expected benefit is small, and races are where a marginal effect is worth taking. For sodium, the ACSM (2007) fluid/electrolyte stand ties meaningful in-session sodium need to **prolonged (> ~1–2 h) and/or high-sweat** exercise; over a sub-hour session, sweat-sodium loss is small and best replaced in the next meal.
 
 ---
 
@@ -214,6 +215,8 @@ Just **auto-fills** session type + duration (no extra output panel). A small par
 - Cermak NM & van Loon LJC (2013) The use of carbohydrates during exercise as an ergogenic aid, *Sports Medicine* — https://pubmed.ncbi.nlm.nih.gov/23846824/
 - Chambers ES, Bridge MW & Jones DA (2009) Carbohydrate sensing in the human mouth: effects on exercise performance, *J Physiol* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2717300/
 - Carter JM, Jeukendrup AE & Jones DA (2004) The effect of carbohydrate mouth rinse on 1-h cycle time trial performance, *Med Sci Sports Exerc* — https://pubmed.ncbi.nlm.nih.gov/15570147/
+- Fares EJ & Kayser B (2011) Carbohydrate mouth rinse effects on exercise capacity in pre- and postprandial states, *J Nutr Metab* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3179882/
+- Trommelen J et al. (2015) A sucrose mouth rinse does not improve 1-hr cycle time trial performance when performed in the fasted or fed state, *Int J Sport Nutr Exerc Metab* — https://cris.maastrichtuniversity.nl/en/publications/a-sucrose-mouth-rinse-does-not-improve-1-hr-cycle-time-trial-perf
 - Baker LB. (2017) Sweating Rate & Sweat Sodium review, *Sports Medicine* — https://link.springer.com/article/10.1007/s40279-017-0691-5
 - Gonzalez RR et al. (2009) Expanded prediction equations of human sweat loss, *J Appl Physiol* — https://pubmed.ncbi.nlm.nih.gov/19407259/
 - Lara B et al. (2016) Sweat electrolyte variability in marathoners, *J Int Soc Sports Nutr* — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4966593/
@@ -230,4 +233,5 @@ Just **auto-fills** session type + duration (no extra output panel). A small par
 
 - ✅ Formulation fully specified and fact-checked
 - ✅ Tool built at `index.html` (carbs, fluid & sodium, Open-Meteo forecast + location autocomplete, two-column design)
-- 🔨 Workout-based session entry (§6) — time/distance toggle + paces panel + paste parser
+- ✅ Workout-based session entry (§6) — time/distance toggle + paces panel + paste parser
+- ✅ 2026-10-29 fixes: `m` = minutes in time mode, metres in distance mode; 65–75-min taper replaces hard cutoff; spec synced to code (paces, Easy→Long rule, dimmed paces panel); sodium "optional" note reachable again

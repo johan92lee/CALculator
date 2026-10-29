@@ -229,6 +229,8 @@
   .flag { margin-top: 8px; padding: 7px 10px; }
   .inputs::-webkit-scrollbar { width: 8px; }
   .inputs::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  #pacesPanel { transition: opacity .2s; }
+  #pacesPanel.dimmed { opacity: .45; }
   @media (prefers-reduced-motion: reduce) {
     .gauge-fill { transition: none; }
     * { scroll-behavior: auto; }
@@ -276,8 +278,8 @@
     </div>
   </section>
   <!-- ===== Personal paces ===== -->
-  <section class="panel">
-    <div class="sect-label">Your paces</div>
+  <section class="panel" id="pacesPanel">
+    <div class="sect-label">Your paces <span class="opt">distance mode</span></div>
     <div class="paces-grid">
       <label><span class="pace-name">Easy</span><input id="paceEasy" type="text" inputmode="numeric" value="6:00"><span class="pace-unit">min/km</span></label>
       <label><span class="pace-name">Marathon</span><input id="paceMp" type="text" inputmode="numeric" value="5:30"><span class="pace-unit">min/km</span></label>
@@ -298,7 +300,7 @@
     </div>
     <textarea id="workout" class="wk-box" rows="2" autocomplete="off" spellcheck="false" placeholder="e.g. 15' easy, 20' tempo, 10' cd"></textarea>
     <div class="wk-summary" id="wkSummary"></div>
-    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>. Distance mode uses your paces.</div>
+    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>. Distance mode uses your paces; <code>m</code> = minutes in time mode, metres in distance mode.</div>
   </section>
   <!-- ===== Session ===== -->
   <section class="panel">
@@ -471,13 +473,16 @@
     if (isNaN(temp)) temp = 18;
     if (isNaN(hum)) hum = 60;
 
-    // Sub-65-min non-race sessions: muscle glycogen and electrolyte reserves
-    // cover the effort, so recommend no in-session carbs or sodium (see SPEC.md).
+    // Non-race sessions: zero in-session carbs & sodium up to 65 min (glycogen and
+    // electrolyte reserves cover it), then ramp linearly to the full model value
+    // by 75 min so there's no hard jump at the cutoff (see SPEC.md §3).
     var isRace = (sKey === "race");
-    var noFuelShort = !isRace && dur > 0 && dur <= 65;
+    var RAMP_START = 65, RAMP_END = 75;
+    var fuelScale = isRace ? 1 : Math.min(1, Math.max(0, (dur - RAMP_START) / (RAMP_END - RAMP_START)));
+    var noFuelShort = !isRace && dur > 0 && dur <= RAMP_START;
+    var ramping = !isRace && dur > RAMP_START && dur < RAMP_END;
 
-    var rate = carbRate(sKey, dur, gut);
-    if (noFuelShort) rate = 0;
+    var rate = carbRate(sKey, dur, gut) * fuelScale;
     var hours = dur / 60;
     var totalCarb = rate * hours;
 
@@ -511,7 +516,7 @@
     // Recommended sodium: ~60% of losses, floored/capped for tolerance, delivered in
     // the drink up to a 1,500 mg/L palatability cap (drink-only for now).
     var REPLACE_FRAC = 0.6, NA_FLOOR = 300, NA_CEIL = 1500, DRINK_CAP = 1500;
-    var targetRate = Math.min(NA_CEIL, Math.max(NA_FLOOR, lossRate * REPLACE_FRAC)); // mg/h
+    var targetRate = Math.min(NA_CEIL, Math.max(NA_FLOOR, lossRate * REPLACE_FRAC)) * fuelScale; // mg/h
     var drinkRate = Math.min(targetRate, intakeRate * DRINK_CAP);  // mg/h the drink can carry
     var sodiumIntake = drinkRate * hours;        // mg sodium to add to drinks
     var actualConc = fluidIntake > 0 ? sodiumIntake / fluidIntake : 0; // mg/L
@@ -543,6 +548,7 @@
     } else {
       html += '<div class="big"><span class="num">' + r0(totalCarb) + '</span><span class="unit">g</span></div>';
       html += '<div class="restate">' + r0(rate) + ' g/h × ' + (Math.round(hours * 10) / 10) + ' h</div>';
+      if (ramping) html += '<div class="gauge-caption" style="margin-top:6px;">Tapered in: short of 75 min, so ' + Math.round(fuelScale * 100) + '% of the full rate.</div>';
 
       // gauge toward the gut ceiling, ticks at 60 and 90
       var fillPct = Math.min(100, (rate / gutCeiling) * 100);
@@ -599,7 +605,7 @@
 
       html += '<div class="recipe"><span class="recipe-label">Mix into your bottles</span><strong>' + r1(naGrams) + ' g</strong> ' + sodiumName + tsp + ' across ~' + r1(fluidIntake) + ' L</div>';
 
-      html += '<div class="gauge-caption" style="margin-top:14px;">Drink to thirst, ~' + round10(intakeRate * 1000) + ' mL/h · target ~' + comma(round10(targetRate)) + ' mg/h (≈60% of ' + comma(round10(lossRate)) + ' mg/h lost)</div>';
+      html += '<div class="gauge-caption" style="margin-top:14px;">Drink to thirst, ~' + round10(intakeRate * 1000) + ' mL/h · target ~' + comma(round10(targetRate)) + ' mg/h (≈' + Math.round(60 * fuelScale) + '% of ' + comma(round10(lossRate)) + ' mg/h lost' + (ramping ? ', tapered in' : '') + ')</div>';
 
       if (actualConc > 1150) {
         html += '<div class="gauge-caption" style="margin-top:8px;">~' + round10(actualConc) + ' mg/L is a strong, salty mix — sip steadily; many split part into salt capsules taken with water.</div>';
@@ -613,7 +619,7 @@
         html += '<div class="flag ok"><span>Drinking to thirst keeps you within ~' + r1(deficitPct) + '% of body mass — no need to force extra fluid.</span></div>';
       }
 
-      if (dur < 60 && sr < 1.2 && !salty) {
+      if (dur < 120 && sr < 1.2 && !salty) {
         html += '<div class="gauge-caption" style="margin-top:8px;">Sodium during the run is optional here — it matters most beyond ~2 h, in the heat, or for salty sweaters.</div>';
       }
     }
@@ -733,10 +739,14 @@
     if (m = s.match(/(\d+(?:\.\d+)?)\s*k\b/)) return +m[1];
     return null;
   }
+  // Bare "m" is ambiguous (minutes vs metres): time mode always reads it as
+  // minutes, distance mode always as metres. Use "km" for distance in time mode.
+  var wkMode = "time";
   function wkMeasure(s, lab, inlinePace, paces) {
     var m;
     if (m = s.match(/(\d+(?:\.\d+)?)\s*'/)) return +m[1];
     if (m = s.match(/(\d+(?:\.\d+)?)\s*(?:min|mins|minutes)\b/)) return +m[1];
+    if (wkMode === "time" && (m = s.match(/(\d+(?:\.\d+)?)\s*m\b/))) return +m[1];
     if (m = s.match(/(\d+(?:\.\d+)?)\s*(?:s|sec|secs|seconds)\b/)) return +m[1] / 60;
     if (m = s.match(/(\d+(?:\.\d+)?)\s*h\b/)) return +m[1] * 60;
     if (m = s.match(/\b(\d+):(\d{2})\b/)) return (+m[1]) + (+m[2]) / 60;
@@ -798,9 +808,12 @@
     render();
   }
   function setWkMode(m) {
+    wkMode = m;
     els.wkTime.classList.toggle("active", m === "time");
     els.wkDist.classList.toggle("active", m === "distance");
     els.workout.placeholder = m === "distance" ? "e.g. 14km easy into 3km HMP" : "e.g. 15' easy, 20' tempo, 10' cd";
+    var pp = document.getElementById("pacesPanel");
+    if (pp) pp.classList.toggle("dimmed", m !== "distance");
     applyWorkout();
   }
 
