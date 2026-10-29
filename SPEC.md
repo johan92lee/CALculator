@@ -128,6 +128,13 @@ Scales with losses so it responds to heat, then bounded by tolerance and palatab
 2. **Sodium to add to drinks (g)** of table salt **or** sodium citrate — recommended *intake* (partial replacement), mixed across your planned fluid.
 3. **Recommended fluid intake** (mL/h + total L, drink-to-thirst), with estimated sweat loss and projected deficit shown as context.
 
+### Phone layout (≤ 1000 px wide)
+
+- Single column, **answer-first order**: Plan from workout → Session → Conditions → **Result** → You & your fuel → Your paces (set-once settings at the bottom).
+- **Sticky result bar** at the bottom (carbs g · salt/citrate g); tap → scroll to the full result. Hides while the result cards are on screen.
+- All controls ≥ 16 px text (no iOS focus-zoom), ≥ 46 px tall; bigger hit area on the gut/salty toggles; safe-area insets respected; can be added to the home screen.
+- **Remembered on the device** (browser localStorage, per-device convenience only): body weight, carb/sodium source, paces, gut-trained, salty-sweater, time/distance mode. Session, duration and conditions are not remembered.
+
 ---
 
 ## 6. Workout-based session entry (optional)

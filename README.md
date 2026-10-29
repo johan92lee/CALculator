@@ -9,6 +9,7 @@ humidity, auto-fetched by date and location).
 - ✅ Formulation fact-checked and locked — see [SPEC.md](SPEC.md)
 - ✅ Tool built (`index.html`) — carbs, fluid & sodium, Open-Meteo forecast + location autocomplete
 - ✅ Workout-based session entry (paste a planned workout → auto-derive session type + duration)
+- ✅ Phone-friendly layout — answer-first order, sticky result bar, settings remembered on the device
 
 ## How it works (short version)
 

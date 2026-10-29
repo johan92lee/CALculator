@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0A0A0A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CAL-culator" />
 <title>CAL-culator — carbs &amp; sodium to prep</title>
 <meta name="description" content="Work out how much carbohydrate and sodium to weigh out before a training session, from session type and weather." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -229,9 +234,72 @@
   .flag { margin-top: 8px; padding: 7px 10px; }
   .inputs::-webkit-scrollbar { width: 8px; }
   .inputs::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  .gauge .gauge-caption { margin-top: 24px; }
+  .cond-row { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr); gap: 13px; align-items: end; }
+  .mbar { display: none; }
   #pacesPanel { transition: opacity .2s; }
   #pacesPanel.dimmed { opacity: .45; }
+  /* ================= Phone / narrow screens =================
+     Single column, answer-first order: workout → session → conditions →
+     RESULT → (set-once) you & your fuel → paces. Panels are flattened out of
+     their desktop columns with display:contents and re-ordered. */
+  @media (max-width: 1000px) {
+    .wrap { padding: 10px max(16px, env(safe-area-inset-right)) calc(84px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+    .layout { display: flex; flex-direction: column; gap: 12px; }
+    .input-cols, .inputs { display: contents; }
+    #panelWorkout { order: 1; } #panelSession { order: 2; } #panelConditions { order: 3; }
+    .results { order: 4; } #panelFuel { order: 5; } #pacesPanel { order: 6; }
+    .mast { margin-bottom: 12px; padding-bottom: 10px; }
+    .mark { font-size: clamp(2.4rem, 13vw, 3.4rem); }
+    .meta { display: none; }
+    .tag { margin-top: 6px; font-size: .64rem; }
+    /* result cards size to content (no equal-height gap) */
+    .readout-grid { grid-template-rows: auto; }
+    .dose { overflow: visible; padding: 16px; }
+    .big .num { font-size: clamp(3rem, 16vw, 4.2rem); }
+    /* ≥16px on every control so iOS Safari doesn't zoom on focus */
+    input[type="text"], input[type="number"], input[type="datetime-local"], select, .wk-box, .paces-grid input { font-size: 16px; }
+    input[type="text"], input[type="number"], input[type="datetime-local"], select { min-height: 46px; }
+    .paces-grid { gap: 6px; }
+    .paces-grid input { padding: 9px 8px; }
+    .paces-grid .pace-name { flex-basis: 108px; }
+    .wk-mode { padding: 10px 14px; font-size: .88rem; }
+    .btn.icon { min-width: 46px; min-height: 46px; }
+    /* bigger hit area for the gut / salty toggles */
+    .dose-toggle { padding: 10px; margin: -10px -10px -10px auto; }
+    .dose-toggle .track { width: 44px; height: 26px; }
+    .dose-toggle .track::after { width: 22px; height: 22px; }
+    .dose-toggle input:checked + .track::after { transform: translateX(18px); }
+    .foot { margin-top: 18px; }
+    #panelWorkout > .hint { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+    /* sticky answer bar */
+    .mbar {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      align-items: center; gap: 14px; width: 100%; border: 0; border-top: 2px solid var(--carb);
+      background: rgba(20,19,17,.97); color: var(--ink); cursor: pointer; text-align: left;
+      padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      font-family: var(--mono); -webkit-tap-highlight-color: transparent;
+      transition: transform .22s ease;
+    }
+    .mbar.hide { transform: translateY(110%); }
+    .mbar .mb-item { display: flex; flex-direction: column; min-width: 0; }
+    .mbar .mb-lab { font-size: .58rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .mbar .mb-val { font-size: 1.35rem; font-weight: 500; line-height: 1.15; white-space: nowrap; }
+    .mbar .mb-val small { font-size: .7rem; color: var(--muted); margin-left: 3px; }
+    .mbar .mb-c .mb-val { color: var(--carb); }
+    .mbar .mb-s .mb-val { color: var(--sodium); }
+    .mbar .mb-go { margin-left: auto; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  }
+  @media (max-width: 520px) {
+    .cond-row { grid-template-columns: 1fr 1fr; }
+    .cond-row > .field:first-child { grid-column: 1 / -1; }
+    .row.two { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); }
+  }
+  @media (max-width: 360px) {
+    .row.two { grid-template-columns: 1fr; }
+  }
   @media (prefers-reduced-motion: reduce) {
+    .mbar { transition: none; }
     .gauge-fill { transition: none; }
     * { scroll-behavior: auto; }
   }
@@ -252,7 +320,7 @@
     <!-- ========== LEFT: personal details ========== -->
     <div class="inputs">
   <!-- ===== You & your fuel ===== -->
-  <section class="panel">
+  <section class="panel" id="panelFuel">
     <div class="sect-label">You &amp; your fuel</div>
     <div class="field" style="margin-bottom:14px;">
       <label for="weight">Body weight</label>
@@ -292,7 +360,7 @@
     <!-- ========== MIDDLE: this session ========== -->
     <div class="inputs">
   <!-- ===== Plan from workout (optional) ===== -->
-  <section class="panel">
+  <section class="panel" id="panelWorkout">
     <div class="sect-label">Plan from workout <span class="opt">optional</span></div>
     <div class="wk-modes" role="tablist" aria-label="Workout input mode">
       <button type="button" class="wk-mode active" id="wkTime" role="tab">Time-based</button>
@@ -303,7 +371,7 @@
     <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>. Distance mode uses your paces; <code>m</code> = minutes in time mode, metres in distance mode.</div>
   </section>
   <!-- ===== Session ===== -->
-  <section class="panel">
+  <section class="panel" id="panelSession">
     <div class="sect-label">Session</div>
     <div class="row two">
       <div class="field">
@@ -326,7 +394,7 @@
     </div>
   </section>
   <!-- ===== Conditions ===== -->
-  <section class="panel">
+  <section class="panel" id="panelConditions">
     <div class="sect-label">Conditions</div>
     <div class="field" style="margin-bottom:13px;">
       <label for="location">Location</label>
@@ -338,7 +406,7 @@
         <button type="button" class="btn icon" id="geo" title="Use my current location" aria-label="Use my current location">📍</button>
       </div>
     </div>
-    <div class="row" style="display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr); gap:13px; align-items:end;">
+    <div class="row cond-row">
       <div class="field">
         <label for="datetime">Date &amp; time</label>
         <input type="datetime-local" id="datetime">
@@ -365,7 +433,7 @@
   </section>
     </div><!-- /middle .inputs -->
    </div><!-- /.input-cols -->
-   <aside class="results">
+   <aside class="results" id="results">
   <!-- ===== Readout ===== -->
   <section class="readout" aria-live="polite">
     <div class="readout-grid" id="readout">
@@ -374,6 +442,11 @@
   </section>
    </aside><!-- /.results -->
   </div><!-- /.layout -->
+  <button type="button" class="mbar" id="mbar" aria-label="Jump to results">
+    <span class="mb-item mb-c"><span class="mb-lab">Carbs</span><span class="mb-val" id="mbCarb">–</span></span>
+    <span class="mb-item mb-s"><span class="mb-lab" id="mbNaLab">Salt</span><span class="mb-val" id="mbNa">–</span></span>
+    <span class="mb-go">Details ↓</span>
+  </button>
   <footer class="foot">
     Carb targets follow the 2016 AND/DC/ACSM position stand and Jeukendrup (2014); sodium
     uses sweat-rate and sweat-sodium ranges from Baker (2017). Full formulation and sources:
@@ -446,7 +519,7 @@
   // ---- DOM -----------------------------------------------------------------
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    readout: $("readout"),
+    readout: $("readout"), mbCarb: $("mbCarb"), mbNa: $("mbNa"), mbNaLab: $("mbNaLab"),
     session: $("session"), duration: $("duration"),
     temp: $("temp"), humidity: $("humidity"), weight: $("weight"),
     carbFormat: $("carbFormat"), sodiumFormat: $("sodiumFormat"),
@@ -626,6 +699,13 @@
     html += '</div>';
 
     els.readout.innerHTML = html;
+
+    // sticky phone bar
+    var carbShown = (rate <= 0 || dur <= 0) ? 0 : r0(totalCarb);
+    var naShown = (dur <= 0 || noFuelShort) ? 0 : r1(naGrams);
+    els.mbCarb.innerHTML = carbShown + '<small>g</small>';
+    els.mbNa.innerHTML = naShown + '<small>g</small>';
+    els.mbNaLab.textContent = sFormat === "salt" ? "Salt" : "Na citrate";
   }
 
   // ---- Weather (Open-Meteo, no key) ----------------------------------------
@@ -926,6 +1006,45 @@
     document.addEventListener("click", function (e) {
       if (e.target !== input && !box.contains(e.target)) close();
     });
+  })();
+
+  // ---- Remember set-once settings on this device ----------------------------
+  // Per-browser convenience only (weight, sources, paces, toggles); the page
+  // works the same if storage is unavailable.
+  var STORE_KEY = "calculator.prefs.v1";
+  var PREF_IDS = ["weight", "carbFormat", "sodiumFormat", "paceEasy", "paceMp", "paceHmp", "paceThr", "paceInt"];
+  function savePrefs() {
+    try {
+      var o = { gut: gutOn, salty: saltyOn, mode: wkMode };
+      PREF_IDS.forEach(function (id) { o[id] = els[id].value; });
+      localStorage.setItem(STORE_KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
+  (function loadPrefs() {
+    try {
+      var o = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      if (!o) return;
+      PREF_IDS.forEach(function (id) { if (o[id] != null && o[id] !== "") els[id].value = o[id]; });
+      gutOn = !!o.gut; saltyOn = !!o.salty;
+      if (o.mode === "distance") setWkMode("distance");
+    } catch (e) {}
+  })();
+  PREF_IDS.forEach(function (id) { els[id].addEventListener("change", savePrefs); els[id].addEventListener("input", savePrefs); });
+  els.readout.addEventListener("change", savePrefs);
+  els.wkTime.addEventListener("click", savePrefs);
+  els.wkDist.addEventListener("click", savePrefs);
+
+  // ---- Sticky result bar (phone): tap to jump; hides while results are on screen
+  (function () {
+    var bar = document.getElementById("mbar"), res = document.getElementById("results");
+    bar.addEventListener("click", function () {
+      res.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (en) {
+        bar.classList.toggle("hide", en[0].isIntersecting);
+      }, { threshold: 0.25 }).observe(res);
+    }
   })();
 
   render();
