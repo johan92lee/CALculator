@@ -158,8 +158,8 @@ The toggle sets the reading of the ambiguous `m` unit (see grammar) and the inpu
 - **Intensity words → matrix row · pace zone:**
   - `easy / recovery / wu / cd / jog / z1 / z2` → Easy · Easy pace
   - `long / steady` → Long · Easy pace
-  - `mp / marathon` → Long · MP pace
-  - `hmp / half` → Tempo · HMP pace
+  - `mp / mrp / marathon` → Long · MP pace (marathon race pace)
+  - `hmp / hmrp / half` → Tempo · HMP pace (half-marathon race pace)
   - `tempo / threshold / t / z4` → Tempo · Threshold pace
   - `intervals / vo2 / reps / hard / 5k / 3k / z5` → Intervals · Interval pace
   - `race / tt` → Race · HMP pace (default)

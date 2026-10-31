@@ -368,7 +368,7 @@
     </div>
     <textarea id="workout" class="wk-box" rows="2" autocomplete="off" spellcheck="false" placeholder="e.g. 15' easy, 20' tempo, 10' cd"></textarea>
     <div class="wk-summary" id="wkSummary"></div>
-    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp · hmp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>. Distance mode uses your paces; <code>m</code> = minutes in time mode, metres in distance mode.</div>
+    <div class="hint" style="margin-top:9px;">Fills session type + duration below. Words: easy · long · mp/mrp · hmp/hmrp · tempo · intervals · race. Reps like <code>5x1km w/90s jog</code>. Distance mode uses your paces; <code>m</code> = minutes in time mode, metres in distance mode.</div>
   </section>
   <!-- ===== Session ===== -->
   <section class="panel" id="panelSession">
@@ -794,8 +794,8 @@
     jog: { row: "easy", pace: "easy" }, wu: { row: "easy", pace: "easy" }, warmup: { row: "easy", pace: "easy" },
     cd: { row: "easy", pace: "easy" }, cooldown: { row: "easy", pace: "easy" }, z1: { row: "easy", pace: "easy" }, z2: { row: "easy", pace: "easy" },
     long: { row: "long", pace: "easy" }, steady: { row: "long", pace: "easy" }, z3: { row: "long", pace: "mp" },
-    mp: { row: "long", pace: "mp" }, marathon: { row: "long", pace: "mp" },
-    hmp: { row: "tempo", pace: "hmp" }, half: { row: "tempo", pace: "hmp" },
+    mp: { row: "long", pace: "mp" }, mrp: { row: "long", pace: "mp" }, marathon: { row: "long", pace: "mp" },
+    hmp: { row: "tempo", pace: "hmp" }, hmrp: { row: "tempo", pace: "hmp" }, half: { row: "tempo", pace: "hmp" },
     tempo: { row: "tempo", pace: "threshold" }, threshold: { row: "tempo", pace: "threshold" }, t: { row: "tempo", pace: "threshold" }, z4: { row: "tempo", pace: "threshold" },
     intervals: { row: "intervals", pace: "interval" }, interval: { row: "intervals", pace: "interval" },
     vo2: { row: "intervals", pace: "interval" }, reps: { row: "intervals", pace: "interval" }, rep: { row: "intervals", pace: "interval" },
